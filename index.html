@@ -468,7 +468,7 @@
                     <span class="ar">عنوان محفظة التبرع</span>
                 </div>
                 <div style="font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--accent2); word-break:break-all; line-height:1.6;">
-                    0xEc64E45fC0801A32c066337A284F3711Ca8300e6
+                    0x52A57ee6711Dbe6453F34C8aF3443db8E86E5094
                 </div>
                 <button onclick="copyWallet(this)" style="margin-top:8px; background:transparent; border:1px solid var(--border); border-radius:6px; padding:5px 14px; color:var(--muted); font-size:0.75rem; cursor:pointer; transition:all 0.2s;">
                     <span class="en">📋 Copy</span><span class="ar">📋 نسخ</span>
@@ -486,6 +486,32 @@
             </button>
             <div id="donateStatus" class="status-msg"></div>
         </div>
+    </div>
+
+    <!-- SUPPORT CARD — always visible -->
+    <div class="card" style="border-color:rgba(79,255,176,0.25); text-align:center;">
+        <div style="font-size:2rem; margin-bottom:12px;">☕</div>
+        <h2 style="color:#fff; font-size:1.1rem; margin-bottom:10px;">
+            <span class="en">Like this tool? Support it!</span>
+            <span class="ar">أعجبتك الأداة؟ ادعمها!</span>
+        </h2>
+        <p style="color:var(--muted); font-size:0.88rem; line-height:1.7; margin-bottom:20px; max-width:460px; margin-left:auto; margin-right:auto;">
+            <span class="en">This tool is completely free. If it helped you recover your funds, you can send any amount you like to the address below — or nothing at all, no pressure!</span>
+            <span class="ar">هذه الأداة مجانية تماماً. إذا ساعدتك في استرداد أموالك، يمكنك إرسال أي مبلغ تريده للعنوان أدناه — أو لا شيء على الإطلاق، لا إلزام!</span>
+        </p>
+        <div style="background:var(--surface2); border:1px solid rgba(79,255,176,0.2); border-radius:12px; padding:16px 20px; margin-bottom:14px;">
+            <div style="font-size:0.78rem; color:var(--muted); margin-bottom:8px;">
+                <span class="en">📬 Donation wallet — works on BSC, ETH &amp; Polygon</span>
+                <span class="ar">📬 محفظة التبرع — تعمل على BSC و ETH و Polygon</span>
+            </div>
+            <div style="font-family:'Space Mono',monospace; font-size:0.76rem; color:var(--accent2); word-break:break-all; line-height:1.7;">
+                0x52A57ee6711Dbe6453F34C8aF3443db8E86E5094
+            </div>
+        </div>
+        <button onclick="copyDonationWallet(this)" style="background:rgba(79,255,176,0.08); border:1px solid rgba(79,255,176,0.25); border-radius:8px; padding:11px 24px; color:var(--accent); font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.2s; width:100%;">
+            <span class="en">📋 Copy Address</span>
+            <span class="ar">📋 نسخ العنوان</span>
+        </button>
     </div>
 
     <!-- DISCLAIMER -->
@@ -763,8 +789,19 @@ async function sendDonation() {
 }
 
 // ============================
-// COPY WALLET
+// COPY WALLET (support card)
 // ============================
+function copyDonationWallet(btn) {
+    navigator.clipboard.writeText(DONATION_WALLET).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✅ <span class="en">Copied!</span><span class="ar">تم النسخ!</span>';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent)';
+        setLang(currentLang);
+        setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = ''; setLang(currentLang); }, 2000);
+    });
+}
+
 function copyWallet(btn) {
     navigator.clipboard.writeText(DONATION_WALLET).then(() => {
         const orig = btn.innerHTML;
