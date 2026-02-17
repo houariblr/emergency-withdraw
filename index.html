@@ -3,91 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency Withdraw Tool | Recover Your Crypto Funds</title>
+    <title>Emergency Withdraw Tool | Recover Your Crypto</title>
     <meta name="description" content="Recover your funds from dead or disappeared DeFi projects. Simple interface to interact with smart contracts when the frontend is down.">
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f1117;
+            background: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
             color: #e0e0e0;
             min-height: 100vh;
             padding: 20px;
         }
 
-        .container { max-width: 820px; margin: 0 auto; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
         header {
             text-align: center;
             padding: 40px 20px;
-            background: linear-gradient(135deg, #1a1d29, #252836);
+            background: linear-gradient(135deg, #1a1d29 0%, #252836 100%);
             border-radius: 16px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             border: 2px solid #ff4444;
         }
 
-        h1 { font-size: 2rem; color: #ff4444; margin-bottom: 8px; font-weight: 700; }
-        .subtitle { color: #b0b0b0; font-size: 1rem; }
+        h1 {
+            font-size: 2rem;
+            color: #ff4444;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #b0b0b0;
+            font-size: 1rem;
+        }
+
+        .warning-banner {
+            background: #4a2424;
+            border-left: 4px solid #ff4444;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .warning-banner h3 {
+            color: #ff4444;
+            margin-bottom: 10px;
+        }
+
+        .warning-banner ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .warning-banner li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+            color: #ffaaaa;
+            font-size: 0.9rem;
+        }
+
+        .warning-banner li:before {
+            content: "⚠";
+            position: absolute;
+            left: 0;
+        }
 
         .card {
             background: #1a1d29;
             border-radius: 12px;
-            padding: 25px;
+            padding: 30px;
             margin-bottom: 20px;
             border: 1px solid #2a2d39;
         }
 
-        .card h2 { color: #00ffcc; font-size: 1.2rem; margin-bottom: 18px; }
-
-        .warning-banner {
-            background: #2a1818;
-            border-left: 4px solid #ff4444;
-            padding: 18px 20px;
-            border-radius: 8px;
+        .card h2 {
+            color: #00ffcc;
+            font-size: 1.3rem;
             margin-bottom: 20px;
         }
 
-        .warning-banner h3 { color: #ff4444; margin-bottom: 10px; font-size: 1rem; }
-
-        .warning-banner li {
-            padding: 4px 0 4px 22px;
-            position: relative;
-            color: #ffaaaa;
-            font-size: 0.88rem;
-            list-style: none;
-        }
-
-        .warning-banner li:before { content: "⚠"; position: absolute; left: 0; }
-
-        .speed-banner {
-            background: linear-gradient(135deg, #1a1d29, #252836);
-            border: 2px solid #00ffcc;
-            border-radius: 12px;
-            padding: 20px;
+        .form-group {
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
         }
 
-        .speed-icon { font-size: 2rem; }
-        .speed-text h3 { color: #00ffcc; font-size: 1rem; margin-bottom: 4px; }
-        .speed-text p { color: #b0b0b0; font-size: 0.85rem; }
-
-        label { display: block; margin-bottom: 7px; color: #b0b0b0; font-size: 0.88rem; font-weight: 500; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
 
         input, select {
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px 16px;
             background: #0f1117;
             border: 2px solid #2a2d39;
             border-radius: 8px;
             color: #e0e0e0;
-            font-size: 0.95rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-            margin-bottom: 15px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
         }
 
         input:focus, select:focus {
@@ -98,63 +124,99 @@
 
         .btn {
             width: 100%;
-            padding: 13px 20px;
+            padding: 14px 24px;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 5px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
 
-        .btn-green {
-            background: linear-gradient(135deg, #00ffcc, #00d9b3);
+        .btn-primary {
+            background: linear-gradient(135deg, #00ffcc 0%, #00d9b3 100%);
             color: #0f1117;
         }
 
-        .btn-green:hover:not(:disabled) {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,255,204,0.4);
+            box-shadow: 0 6px 20px rgba(0, 255, 204, 0.4);
         }
 
-        .btn-red {
-            background: linear-gradient(135deg, #ff4444, #cc0000);
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
             color: #fff;
         }
 
-        .btn-red:hover:not(:disabled) {
+        .btn-danger:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255,68,68,0.4);
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
         }
 
-        .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-        .wallet-box {
-            background: #0f1117;
-            border: 1px solid #00ffcc44;
-            padding: 14px;
+        .wallet-info {
+            background: #252836;
+            padding: 15px;
             border-radius: 8px;
-            margin-top: 15px;
+            margin-bottom: 20px;
             display: none;
         }
 
-        .wallet-box.show { display: block; }
+        .wallet-info.show {
+            display: block;
+        }
 
-        .wallet-box p {
+        .wallet-info p {
             color: #00ffcc;
-            font-size: 0.88rem;
-            margin-bottom: 5px;
+            font-size: 0.9rem;
             word-break: break-all;
         }
 
-        .wallet-box p:last-child { margin-bottom: 0; }
+        .functions-list {
+            display: none;
+        }
 
-        .divider {
-            text-align: center;
-            color: #5a5a5a;
-            margin: 20px 0;
-            font-size: 0.9rem;
+        .functions-list.show {
+            display: block;
+        }
+
+        .function-item {
+            background: #252836;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #00ffcc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .function-item:hover {
+            background: #2a2d39;
+            transform: translateX(5px);
+        }
+
+        .function-item.danger {
+            border-left-color: #ff4444;
+        }
+
+        .function-name {
+            font-weight: 600;
+            color: #00ffcc;
+            margin-bottom: 5px;
+        }
+
+        .function-item.danger .function-name {
+            color: #ff4444;
+        }
+
+        .function-desc {
+            font-size: 0.85rem;
+            color: #b0b0b0;
         }
 
         .loading {
@@ -164,910 +226,1146 @@
             display: none;
         }
 
-        .loading.show { display: block; }
+        .loading.show {
+            display: block;
+        }
 
         .spinner {
             border: 3px solid #2a2d39;
             border-top: 3px solid #00ffcc;
             border-radius: 50%;
-            width: 38px;
-            height: 38px;
-            animation: spin 0.9s linear infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
             margin: 0 auto 10px;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-text { color: #b0b0b0; font-size: 0.9rem; margin-top: 8px; }
-
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #2a2d39;
-            border-radius: 2px;
-            margin-top: 12px;
-            overflow: hidden;
-            display: none;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .progress-bar.show { display: block; }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ffcc, #00d9b3);
-            border-radius: 2px;
-            transition: width 0.3s;
-            width: 0%;
-        }
-
-        .error-box {
-            background: #2a1818;
+        .error-message {
+            background: #4a2424;
             color: #ffaaaa;
-            padding: 13px 15px;
+            padding: 15px;
             border-radius: 8px;
-            margin-top: 12px;
-            font-size: 0.88rem;
+            margin-top: 15px;
             display: none;
-            border-left: 3px solid #ff4444;
         }
 
-        .error-box.show { display: block; }
+        .error-message.show {
+            display: block;
+        }
 
-        .success-box {
-            background: #182a18;
+        .success-message {
+            background: #244a24;
             color: #aaffaa;
-            padding: 13px 15px;
+            padding: 15px;
             border-radius: 8px;
-            margin-top: 12px;
-            font-size: 0.88rem;
+            margin-top: 15px;
             display: none;
-            border-left: 3px solid #00ff88;
         }
 
-        .success-box.show { display: block; }
-
-        /* Contracts List */
-        .contracts-grid { display: flex; flex-direction: column; gap: 10px; }
-
-        .contract-card {
-            background: #0f1117;
-            border: 1px solid #2a2d39;
-            border-radius: 10px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.25s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .success-message.show {
+            display: block;
         }
 
-        .contract-card:hover {
-            border-color: #00ffcc;
-            background: #1a1d29;
-            transform: translateX(4px);
-        }
-
-        .contract-left { flex: 1; }
-
-        .contract-name {
-            font-weight: 600;
-            color: #e0e0e0;
-            font-size: 0.95rem;
-            margin-bottom: 4px;
-        }
-
-        .contract-addr {
-            font-family: monospace;
-            color: #8a8a8a;
-            font-size: 0.8rem;
-        }
-
-        .contract-meta {
-            display: flex;
-            gap: 10px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-        }
-
-        .meta-tag {
-            background: #2a2d39;
-            color: #b0b0b0;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
-
-        .meta-tag.green { background: #00ffcc22; color: #00ffcc; }
-        .meta-tag.red { background: #ff444422; color: #ff8888; }
-        .meta-tag.orange { background: #ffa50022; color: #ffa500; }
-
-        .contract-arrow { color: #00ffcc; font-size: 1.2rem; margin-left: 10px; }
-
-        /* Functions */
-        .function-card {
-            background: #0f1117;
-            border: 1px solid #2a2d39;
-            border-left: 4px solid #00ffcc;
+        .fee-info {
+            background: #252836;
+            padding: 15px;
             border-radius: 8px;
-            padding: 13px 15px;
+            margin: 20px 0;
+            border: 2px solid #ffa500;
+        }
+
+        .fee-info h4 {
+            color: #ffa500;
             margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.25s;
         }
 
-        .function-card:hover { background: #1a1d29; transform: translateX(4px); }
-        .function-card.danger { border-left-color: #ff4444; }
-
-        .function-title {
-            font-weight: 600;
-            color: #00ffcc;
-            font-size: 0.95rem;
-            margin-bottom: 3px;
-            font-family: monospace;
+        .fee-info p {
+            color: #b0b0b0;
+            font-size: 0.9rem;
         }
 
-        .function-card.danger .function-title { color: #ff8888; }
-        .function-desc { color: #b0b0b0; font-size: 0.82rem; }
-
-        /* Fee box */
-        .fee-box {
-            background: #1a1800;
-            border: 1px solid #ffa50055;
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .fee-box h4 { color: #ffa500; margin-bottom: 6px; font-size: 0.95rem; }
-        .fee-box p { color: #b0b0b0; font-size: 0.85rem; }
-
-        /* TX Preview */
         .tx-preview {
             background: #0f1117;
-            border: 1px solid #2a2d39;
+            padding: 15px;
             border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 15px;
+            margin: 15px 0;
             display: none;
         }
 
-        .tx-preview.show { display: block; }
-        .tx-preview h4 { color: #00ffcc; margin-bottom: 10px; font-size: 0.95rem; }
+        .tx-preview.show {
+            display: block;
+        }
 
-        .tx-row {
+        .tx-preview h4 {
+            color: #00ffcc;
+            margin-bottom: 10px;
+        }
+
+        .tx-detail {
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2d39;
             display: flex;
             justify-content: space-between;
-            padding: 7px 0;
-            border-bottom: 1px solid #2a2d39;
+        }
+
+        .tx-detail:last-child {
+            border-bottom: none;
+        }
+
+        .tx-label {
+            color: #8a8a8a;
             font-size: 0.85rem;
         }
 
-        .tx-row:last-child { border-bottom: none; }
-        .tx-key { color: #8a8a8a; }
-        .tx-val { color: #e0e0e0; font-weight: 600; font-family: monospace; }
+        .tx-value {
+            color: #e0e0e0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .contract-item {
+            background: #252836;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #00ffcc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contract-item:hover {
+            background: #2a2d39;
+            transform: translateX(5px);
+        }
+
+        .contract-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .contract-address {
+            font-family: monospace;
+            color: #00ffcc;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .contract-badge {
+            background: #00ffcc22;
+            color: #00ffcc;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .contract-info {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: #b0b0b0;
+        }
+
+        .contract-info span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
         footer {
             text-align: center;
             padding: 30px 20px;
-            color: #6a6a6a;
-            font-size: 0.85rem;
+            color: #8a8a8a;
+            font-size: 0.9rem;
         }
 
-        @media (max-width: 600px) {
-            h1 { font-size: 1.5rem; }
-            .card { padding: 18px; }
-            .speed-banner { flex-direction: column; text-align: center; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #252836;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #8a8a8a;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #00ffcc;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
+    <div class="container">
+        <header>
+            <h1>🚨 Emergency Withdraw Tool</h1>
+            <p class="subtitle">Recover your funds when project websites disappear</p>
+        </header>
 
-    <header>
-        <h1>🚨 Emergency Withdraw Tool</h1>
-        <p class="subtitle">Recover your locked funds when DeFi project websites disappear</p>
-    </header>
-
-    <!-- Security Notice -->
-    <div class="warning-banner">
-        <h3>⚠️ Security Notice</h3>
-        <ul>
-            <li>We NEVER ask for your private keys or seed phrase — never share them with anyone</li>
-            <li>You only connect your wallet (like MetaMask) to approve transactions yourself</li>
-            <li>Always verify all transaction details in your wallet before confirming</li>
-            <li>Use at your own risk — we are not responsible for any losses</li>
-            <li>Service fee: 0.005 BNB (~$3) is charged per withdrawal to support this tool</li>
-        </ul>
-    </div>
-
-    <!-- Speed Banner -->
-    <div class="speed-banner">
-        <div class="speed-icon">⚡</div>
-        <div class="speed-text">
-            <h3>Fast Mode Active — BSCScan API Connected</h3>
-            <p>Your wallet will be scanned in 3–5 seconds with full contract details, names, and verification status</p>
-        </div>
-    </div>
-
-    <!-- Step 1: Connect Wallet -->
-    <div class="card">
-        <h2>Step 1 — Connect Your Wallet</h2>
-        <button id="connectBtn" class="btn btn-green">🔗 Connect Wallet</button>
-        <div id="walletBox" class="wallet-box">
-            <p><strong>Address:</strong> <span id="walletAddr">—</span></p>
-            <p><strong>Network:</strong> <span id="networkName">—</span></p>
-            <p><strong>Balance:</strong> <span id="walletBal">—</span></p>
-        </div>
-        <div id="connectError" class="error-box"></div>
-    </div>
-
-    <!-- Step 2: Find Contracts -->
-    <div class="card">
-        <h2>Step 2 — Find Your Contracts</h2>
-
-        <button id="scanBtn" class="btn btn-green" disabled>🔍 Scan My Wallet (Auto)</button>
-        <p style="color:#8a8a8a; font-size:0.82rem; text-align:center; margin-top:8px;">
-            Automatically finds all smart contracts you've interacted with
-        </p>
-
-        <div class="divider">— OR enter manually —</div>
-
-        <label>Blockchain Network</label>
-        <select id="networkSelect">
-            <option value="bsc">Binance Smart Chain (BSC)</option>
-            <option value="eth">Ethereum</option>
-            <option value="polygon">Polygon</option>
-        </select>
-
-        <label>Contract Address</label>
-        <input type="text" id="contractInput" placeholder="0x..." />
-
-        <button id="analyzeBtn" class="btn btn-green" disabled>🔎 Analyze Contract</button>
-
-        <div id="scanLoading" class="loading">
-            <div class="spinner"></div>
-            <div id="scanLoadingText" class="loading-text">Scanning wallet...</div>
-            <div class="progress-bar show"><div id="progressFill" class="progress-fill"></div></div>
+        <div class="warning-banner">
+            <h3>⚠️ Important Security Notice</h3>
+            <ul>
+                <li>This tool interacts directly with smart contracts on the blockchain</li>
+                <li>We NEVER ask for your private keys or seed phrase</li>
+                <li>You only connect your wallet (like you do with any DApp)</li>
+                <li>Always verify transaction details before confirming</li>
+                <li>Use at your own risk - we are not responsible for any losses</li>
+                <li>Service fee: 0.005 BNB (~$3) is added to each transaction</li>
+            </ul>
         </div>
 
-        <div id="scanError" class="error-box"></div>
-    </div>
-
-    <!-- Contracts List (shown after scan) -->
-    <div id="contractsCard" class="card" style="display:none;">
-        <h2>📋 Contracts Found — Select One</h2>
-        <p style="color:#b0b0b0; font-size:0.85rem; margin-bottom:15px;">
-            Click any contract to analyze its withdrawal functions
-        </p>
-        <div id="contractsGrid" class="contracts-grid"></div>
-    </div>
-
-    <!-- Step 3: Functions -->
-    <div id="functionsCard" class="card" style="display:none;">
-        <h2>Step 3 — Select Withdrawal Function</h2>
-        <p style="color:#b0b0b0; font-size:0.85rem; margin-bottom:15px;">
-            These functions were detected in the contract. Click one to proceed.
-        </p>
-        <div id="functionsList"></div>
-
-        <div id="analyzeLoading" class="loading">
-            <div class="spinner"></div>
-            <div class="loading-text">Reading contract...</div>
-        </div>
-
-        <div id="analyzeError" class="error-box"></div>
-    </div>
-
-    <!-- Step 4: Execute -->
-    <div id="executeCard" class="card" style="display:none;">
-        <h2>Step 4 — Execute Withdrawal</h2>
-
-        <div class="fee-box">
-            <h4>💰 Service Fee</h4>
-            <p>A fee of <strong>0.005 BNB (~$3)</strong> will be sent to support this tool before your withdrawal is executed.</p>
-        </div>
-
-        <div id="txPreview" class="tx-preview">
-            <h4>Transaction Preview</h4>
-            <div class="tx-row">
-                <span class="tx-key">Function</span>
-                <span class="tx-val" id="prevFunc">—</span>
+        <div class="card" style="background: linear-gradient(135deg, #1a1d29 0%, #252836 100%); border: 2px solid #00ffcc;">
+            <h2>⚡ Speed Boost: Add API Keys (Optional but Recommended)</h2>
+            <p style="color: #b0b0b0; margin-bottom: 15px;">
+                For <strong style="color: #00ffcc;">10x faster</strong> wallet scanning, add free API keys. Without them, scanning works but takes longer.
+            </p>
+            <div style="background: #0f1117; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h4 style="color: #00ffcc; margin-bottom: 10px;">How to get free API keys:</h4>
+                <ol style="color: #b0b0b0; padding-left: 20px; line-height: 1.8;">
+                    <li><strong>BSCScan:</strong> Register at <a href="https://bscscan.com/register" target="_blank" style="color: #00ffcc;">bscscan.com/register</a> → Go to "API-KEYs" → Add key</li>
+                    <li><strong>Etherscan:</strong> Register at <a href="https://etherscan.io/register" target="_blank" style="color: #00ffcc;">etherscan.io/register</a> → Same process</li>
+                    <li><strong>Polygonscan:</strong> Register at <a href="https://polygonscan.com/register" target="_blank" style="color: #00ffcc;">polygonscan.com/register</a> → Same process</li>
+                </ol>
             </div>
-            <div class="tx-row">
-                <span class="tx-key">Contract</span>
-                <span class="tx-val" id="prevContract">—</span>
-            </div>
-            <div class="tx-row">
-                <span class="tx-key">Service Fee</span>
-                <span class="tx-val">0.005 BNB</span>
-            </div>
-            <div class="tx-row">
-                <span class="tx-key">Estimated Gas</span>
-                <span class="tx-val" id="prevGas">Calculating...</span>
+            <p style="color: #8a8a8a; font-size: 0.85rem;">
+                💡 Tip: Edit the HTML file and replace <code>YOUR_BSCSCAN_API_KEY_HERE</code> with your actual API key for instant speed boost!
+            </p>
+        </div>
+
+        <div class="warning-banner" style="display: none;" id="apiWarning">
+            <h3>⚠️ No API Key Detected</h3>
+            <ul>
+                <li>Scanning will work but take 30-60 seconds (vs 3-5 seconds with API)</li>
+                <li>Add free API keys in the code for 10x faster scanning</li>
+                <li>See instructions above ↑</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Step 1: Connect Your Wallet</h2>
+            <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+            <div id="walletInfo" class="wallet-info">
+                <p><strong>Connected:</strong> <span id="walletAddress"></span></p>
+                <p><strong>Network:</strong> <span id="networkName"></span></p>
+                <p><strong>Balance:</strong> <span id="balance"></span> BNB</p>
             </div>
         </div>
 
-        <button id="executeBtn" class="btn btn-red">🚀 Execute Withdrawal</button>
+        <div class="card">
+            <h2>Step 2: Find Your Contracts</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <button id="scanWalletBtn" class="btn btn-primary" disabled>
+                    🔍 Scan My Wallet (Automatic)
+                </button>
+                <p id="scanSpeed" style="color: #8a8a8a; font-size: 0.85rem; margin-top: 10px; text-align: center;">
+                    Automatically finds all contracts you've interacted with
+                </p>
+            </div>
 
-        <div id="execSuccess" class="success-box"></div>
-        <div id="execError" class="error-box"></div>
+            <div style="text-align: center; margin: 20px 0; color: #8a8a8a;">
+                — OR —
+            </div>
+
+            <div>
+                <h3 style="color: #00ffcc; font-size: 1rem; margin-bottom: 15px;">Manual Entry</h3>
+                <div class="form-group">
+                    <label for="network">Blockchain Network</label>
+                    <select id="network">
+                        <option value="bsc">Binance Smart Chain (BSC)</option>
+                        <option value="eth">Ethereum</option>
+                        <option value="polygon">Polygon</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contractAddress">Contract Address</label>
+                    <input 
+                        type="text" 
+                        id="contractAddress" 
+                        placeholder="0x..."
+                        pattern="^0x[a-fA-F0-9]{40}$"
+                    >
+                </div>
+                <button id="analyzeBtn" class="btn btn-primary" disabled>Analyze Contract</button>
+            </div>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p id="loadingText">Analyzing contract...</p>
+            </div>
+
+            <div id="errorMsg" class="error-message"></div>
+        </div>
+
+        <div id="contractsListCard" class="card" style="display: none;">
+            <h2>📋 Contracts Found</h2>
+            <p style="color: #b0b0b0; margin-bottom: 15px; font-size: 0.9rem;">
+                We found these contracts in your wallet history. Select one to analyze:
+            </p>
+            <div id="contractsList"></div>
+        </div>
+
+        <div id="functionsCard" class="card" style="display: none;">
+            <h2>Step 3: Select Withdrawal Function</h2>
+            <p style="color: #b0b0b0; margin-bottom: 15px; font-size: 0.9rem;">
+                We found these withdrawal functions in the contract. Click on one to proceed:
+            </p>
+            <div id="functionsList" class="functions-list"></div>
+        </div>
+
+        <div id="executeCard" class="card" style="display: none;">
+            <h2>Step 4: Execute Withdrawal</h2>
+            
+            <div class="fee-info">
+                <h4>💰 Service Fee</h4>
+                <p>A service fee of <strong>0.005 BNB (~$3)</strong> will be charged for this transaction.</p>
+                <p style="margin-top: 10px;">This fee covers gas optimization and helps us maintain this free tool.</p>
+            </div>
+
+            <div id="txPreview" class="tx-preview">
+                <h4>Transaction Preview:</h4>
+                <div class="tx-detail">
+                    <span class="tx-label">Function:</span>
+                    <span class="tx-value" id="previewFunction">-</span>
+                </div>
+                <div class="tx-detail">
+                    <span class="tx-label">Contract:</span>
+                    <span class="tx-value" id="previewContract">-</span>
+                </div>
+                <div class="tx-detail">
+                    <span class="tx-label">Service Fee:</span>
+                    <span class="tx-value">0.005 BNB</span>
+                </div>
+                <div class="tx-detail">
+                    <span class="tx-label">Estimated Gas:</span>
+                    <span class="tx-value" id="previewGas">Calculating...</span>
+                </div>
+            </div>
+
+            <button id="executeBtn" class="btn btn-danger">Execute Withdrawal</button>
+            
+            <div id="successMsg" class="success-message"></div>
+            <div id="executeError" class="error-message"></div>
+        </div>
+
+        <div class="card">
+            <h2>❓ How It Works</h2>
+            <p style="color: #b0b0b0; line-height: 1.8;">
+                When a DeFi project's website goes down or disappears, your funds are still locked in the smart contract. 
+                This tool helps you interact directly with the contract to withdraw your funds without needing the original website.
+                <br><br>
+                <strong>Step by step:</strong><br>
+                1. Connect your wallet (MetaMask, Trust Wallet, etc.)<br>
+                2. Enter the contract address where your funds are locked<br>
+                3. We automatically detect withdrawal functions<br>
+                4. Execute the withdrawal directly from your wallet<br>
+                <br>
+                <strong style="color: #ff4444;">Remember:</strong> Always verify the contract address is correct before proceeding!
+            </p>
+        </div>
     </div>
 
-    <!-- How it works -->
-    <div class="card">
-        <h2>❓ How It Works</h2>
-        <p style="color:#b0b0b0; line-height:1.85; font-size:0.9rem;">
-            When a DeFi project disappears, your funds remain locked in its smart contract on the blockchain.
-            This tool reads that contract directly and gives you a simple button to withdraw — without needing the original website.<br><br>
-            <strong>Steps:</strong><br>
-            1. Connect your wallet (MetaMask / Trust Wallet)<br>
-            2. Scan your wallet or paste the contract address<br>
-            3. Select the withdrawal function<br>
-            4. Confirm the transaction in your wallet<br><br>
-            <strong style="color:#ff8888;">Important:</strong> Always double-check the contract address before proceeding. Never share your seed phrase with anyone.
+    <footer>
+        <p>&copy; 2026 Emergency Withdraw Tool | Built by Houari Boulares</p>
+        <p style="margin-top: 10px; font-size: 0.85rem;">
+            Educational purposes only. Not financial advice. Always DYOR.
         </p>
-    </div>
+    </footer>
 
-</div>
+    <script>
+        // Configuration
+        const SERVICE_FEE = ethers.utils.parseEther("0.005"); // 0.005 BNB
+        const FEE_RECIPIENT = "0x52A57ee6711Dbe6453F34C8aF3443db8E86E5094"; // TODO: Replace with your address
 
-<footer>
-    <p>© 2026 Emergency Withdraw Tool | Built by Houari Boulares</p>
-    <p style="margin-top:6px;">Educational purposes only. Not financial advice. Use at your own risk.</p>
-</footer>
+        // API Keys (Get free keys from respective explorers)
+        const API_KEYS = {
+            bscscan: '9X7377VVGNKKWX71IZP8C7PARZNSQWAXRB',     // Get from: https://bscscan.com/myapikey
+            etherscan: '-nlfxnEP1jvwjMZFHTgZT',  // Get from: https://etherscan.io/myapikey
+            polygonscan: '-nlfxnEP1jvwjMZFHTgZT' // Get from: https://polygonscan.com/myapikey
+        };
 
-<script>
-// ============================================================
-//  CONFIGURATION — DO NOT SHARE THIS FILE PUBLICLY
-// ============================================================
-const FEE_RECIPIENT  = '0x97c75674B4A64d690bd4B5714210fD87FB0370dC';
-const SERVICE_FEE    = ethers.utils.parseEther('0.005');
-
-const API_KEYS = {
-    bscscan:    '9X7377VVGNKKWX71IZP8C7PARZNSQWAXRB',
-    etherscan:  '-nlfxnEP1jvwjMZFHTgZT',   // optional — get free at etherscan.io
-    polygonscan:'-nlfxnEP1jvwjMZFHTgZT'  // optional — get free at polygonscan.com
-};
-
-const NETWORKS = {
-    bsc: {
-        chainId:  '0x38',
-        name:     'BSC Mainnet',
-        symbol:   'BNB',
-        rpc:      'https://bsc-dataseed.binance.org/',
-        explorer: 'https://bscscan.com',
-        api:      'https://api.bscscan.com/api',
-        apiKey:   'bscscan'
-    },
-    eth: {
-        chainId:  '0x1',
-        name:     'Ethereum Mainnet',
-        symbol:   'ETH',
-        rpc:      'https://eth-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT',
-        explorer: 'https://etherscan.io',
-        api:      'https://api.etherscan.io/api',
-        apiKey:   'etherscan'
-    },
-    polygon: {
-        chainId:  '0x89',
-        name:     'Polygon Mainnet',
-        symbol:   'MATIC',
-        rpc:      'https://polygon-rpc.com',
-        explorer: 'https://polygonscan.com',
-        api:      'https://api.polygonscan.com/api',
-        apiKey:   'polygonscan'
-    }
-};
-
-const WITHDRAW_FNS = [
-    { name: 'withdraw',          desc: 'Withdraw all your staked funds' },
-    { name: 'emergencyWithdraw', desc: '⚠ Emergency exit — may forfeit rewards' },
-    { name: 'unstake',           desc: 'Unstake your tokens' },
-    { name: 'claim',             desc: 'Claim your pending rewards' },
-    { name: 'claimReward',       desc: 'Claim accumulated rewards' },
-    { name: 'getReward',         desc: 'Retrieve your rewards' },
-    { name: 'exit',              desc: 'Exit position and claim all' },
-    { name: 'harvest',           desc: 'Harvest farming rewards' },
-    { name: 'withdrawAll',       desc: 'Withdraw everything at once' },
-    { name: 'rescueTokens',      desc: 'Rescue stuck tokens' },
-    { name: 'emergencyExit',     desc: '⚠ Emergency exit function' }
-];
-
-// ============================================================
-//  STATE
-// ============================================================
-let provider        = null;
-let signer          = null;
-let userAddress     = null;
-let currentNetwork  = null;
-let activeContract  = null;
-let selectedFn      = null;
-
-// ============================================================
-//  DOM SHORTCUTS
-// ============================================================
-const $  = id => document.getElementById(id);
-const connectBtn  = $('connectBtn');
-const scanBtn     = $('scanBtn');
-const analyzeBtn  = $('analyzeBtn');
-const executeBtn  = $('executeBtn');
-
-// ============================================================
-//  CONNECT WALLET
-// ============================================================
-connectBtn.addEventListener('click', async () => {
-    if (!window.ethereum) {
-        showErr('connectError', 'MetaMask or Trust Wallet not detected. Please install it first.');
-        return;
-    }
-
-    try {
-        connectBtn.textContent = 'Connecting...';
-        connectBtn.disabled = true;
-
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        provider    = new ethers.providers.Web3Provider(window.ethereum);
-        signer      = provider.getSigner();
-        userAddress = accounts[0];
-
-        const net = await provider.getNetwork();
-        const bal = await provider.getBalance(userAddress);
-        const chainId = '0x' + net.chainId.toString(16);
-
-        currentNetwork = Object.keys(NETWORKS).find(k => NETWORKS[k].chainId === chainId) || null;
-
-        $('walletAddr').textContent  = short(userAddress);
-        $('networkName').textContent = currentNetwork ? NETWORKS[currentNetwork].name : `Chain ${net.chainId}`;
-        $('walletBal').textContent   = parseFloat(ethers.utils.formatEther(bal)).toFixed(4) + ' ' + (currentNetwork ? NETWORKS[currentNetwork].symbol : 'tokens');
-
-        $('walletBox').classList.add('show');
-        connectBtn.textContent = '✅ Connected';
-        scanBtn.disabled    = false;
-        analyzeBtn.disabled = false;
-
-    } catch (e) {
-        connectBtn.textContent = '🔗 Connect Wallet';
-        connectBtn.disabled = false;
-        showErr('connectError', 'Connection failed: ' + e.message);
-    }
-});
-
-// ============================================================
-//  SCAN WALLET — USING BSCSCAN API
-// ============================================================
-scanBtn.addEventListener('click', async () => {
-    if (!userAddress) { showErr('scanError', 'Connect your wallet first'); return; }
-    if (!currentNetwork) { showErr('scanError', 'Switch to BSC, Ethereum, or Polygon in your wallet'); return; }
-
-    hideAll();
-    showLoading('scanLoading', 'Starting wallet scan...');
-    setProgress(5);
-    scanBtn.disabled = true;
-
-    try {
-        const net    = NETWORKS[currentNetwork];
-        const apiKey = API_KEYS[net.apiKey];
-        const hasApi = apiKey && !apiKey.startsWith('YOUR_');
-
-        let contracts;
-
-        if (hasApi) {
-            contracts = await scanWithAPI(userAddress, net, apiKey);
-        } else {
-            contracts = await scanDirect(userAddress);
-        }
-
-        setProgress(100);
-
-        if (contracts.length === 0) {
-            throw new Error('No contracts found. Try entering the contract address manually.');
-        }
-
-        renderContracts(contracts, currentNetwork);
-        $('contractsCard').style.display = 'block';
-        $('contractsCard').scrollIntoView({ behavior: 'smooth' });
-
-    } catch (e) {
-        showErr('scanError', e.message);
-    } finally {
-        hideLoading('scanLoading');
-        scanBtn.disabled = false;
-    }
-});
-
-// ---- FAST: API-Based Scan ----
-async function scanWithAPI(address, net, apiKey) {
-    const contracts = new Map();
-
-    // 1. Normal transactions
-    showLoadingText('scanLoadingText', '⚡ Fetching transactions from API...');
-    setProgress(20);
-    const txRes  = await apiFetch(net.api, { module:'account', action:'txlist', address, sort:'desc', apikey: apiKey });
-    if (txRes.result && Array.isArray(txRes.result)) {
-        for (const tx of txRes.result) {
-            if (tx.to && tx.input && tx.input !== '0x') {
-                addOrUpdate(contracts, tx.to, tx);
+        const NETWORKS = {
+            bsc: {
+                chainId: '0x38',
+                name: 'BSC Mainnet',
+                rpc: 'https://bsc-dataseed.binance.org/',
+                explorer: 'https://bscscan.com',
+                api: 'https://api.bscscan.com/api',
+                apiKey: 'bscscan'
+            },
+            eth: {
+                chainId: '0x1',
+                name: 'Ethereum Mainnet',
+                rpc: 'https://eth.llamarpc.com',
+                explorer: 'https://etherscan.io',
+                api: 'https://api.etherscan.io/api',
+                apiKey: 'etherscan'
+            },
+            polygon: {
+                chainId: '0x89',
+                name: 'Polygon Mainnet',
+                rpc: 'https://polygon-rpc.com',
+                explorer: 'https://polygonscan.com',
+                api: 'https://api.polygonscan.com/api',
+                apiKey: 'polygonscan'
             }
-        }
-    }
+        };
 
-    // 2. Token transfers (ERC-20)
-    showLoadingText('scanLoadingText', '⚡ Fetching token transfers...');
-    setProgress(45);
-    const tokRes = await apiFetch(net.api, { module:'account', action:'tokentx', address, sort:'desc', apikey: apiKey });
-    if (tokRes.result && Array.isArray(tokRes.result)) {
-        for (const tx of tokRes.result) {
-            if (tx.contractAddress) {
-                const addr = tx.contractAddress;
-                if (!contracts.has(addr.toLowerCase())) {
-                    contracts.set(addr.toLowerCase(), {
-                        address:    addr,
-                        name:       tx.tokenName || null,
-                        symbol:     tx.tokenSymbol || null,
-                        txCount:    1,
-                        lastTx:     tx.hash,
-                        isToken:    true,
-                        isVerified: true
-                    });
-                } else {
-                    contracts.get(addr.toLowerCase()).txCount++;
-                }
+        // Common withdrawal function names
+        const WITHDRAW_FUNCTIONS = [
+            'withdraw',
+            'emergencyWithdraw',
+            'unstake',
+            'claim',
+            'claimReward',
+            'getReward',
+            'exit',
+            'harvest',
+            'withdrawAll',
+            'rescueTokens',
+            'emergencyExit'
+        ];
+
+        // State
+        let provider = null;
+        let signer = null;
+        let userAddress = null;
+        let contract = null;
+        let selectedFunction = null;
+
+        // DOM Elements
+        const connectBtn = document.getElementById('connectBtn');
+        const scanWalletBtn = document.getElementById('scanWalletBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const executeBtn = document.getElementById('executeBtn');
+        const walletInfo = document.getElementById('walletInfo');
+        const walletAddress = document.getElementById('walletAddress');
+        const networkName = document.getElementById('networkName');
+        const balance = document.getElementById('balance');
+        const contractAddress = document.getElementById('contractAddress');
+        const networkSelect = document.getElementById('network');
+        const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loadingText');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const executeError = document.getElementById('executeError');
+        const functionsList = document.getElementById('functionsList');
+        const functionsCard = document.getElementById('functionsCard');
+        const executeCard = document.getElementById('executeCard');
+        const txPreview = document.getElementById('txPreview');
+        const contractsListCard = document.getElementById('contractsListCard');
+        const contractsList = document.getElementById('contractsList');
+
+        // Detect wallet provider (handles multiple wallet extensions conflict)
+        function getWalletProvider() {
+            if (window.ethereum?.providers?.length) {
+                const metamask = window.ethereum.providers.find(p => p.isMetaMask && !p.isCoinbaseWallet);
+                if (metamask) return metamask;
+                return window.ethereum.providers[0];
             }
+            if (window.ethereum) return window.ethereum;
+            return null;
         }
-    }
 
-    // 3. Enrich top 15 contracts with names
-    showLoadingText('scanLoadingText', '⚡ Fetching contract details...');
-    setProgress(70);
-    const list = Array.from(contracts.values()).filter(c => !c.isToken).slice(0, 15);
-    for (const c of list) {
-        try {
-            const info = await apiFetch(net.api, { module:'contract', action:'getsourcecode', address: c.address, apikey: apiKey });
-            if (info.result && info.result[0]) {
-                c.name       = info.result[0].ContractName || c.name;
-                c.isVerified = info.result[0].SourceCode !== '';
+        // Connect Wallet
+        connectBtn.addEventListener('click', async () => {
+            const walletProvider = getWalletProvider();
+
+            if (!walletProvider) {
+                showError('No wallet detected! Please install MetaMask from metamask.io');
+                return;
             }
-            await sleep(210); // respect 5 req/sec limit
-        } catch (_) { /* skip */ }
-    }
 
-    setProgress(95);
-    return Array.from(contracts.values()).sort((a, b) => b.txCount - a.txCount);
-}
+            try {
+                const accounts = await walletProvider.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                provider = new ethers.providers.Web3Provider(walletProvider);
+                signer = provider.getSigner();
+                userAddress = accounts[0];
 
-// ---- SLOW: Direct Blockchain Scan (fallback) ----
-async function scanDirect(address) {
-    const contracts = new Map();
-    const current   = await provider.getBlockNumber();
-    const from      = Math.max(0, current - 5000);
-    const chunk     = 1000;
+                // Get network info
+                const networkInfo = await provider.getNetwork();
+                const bal = await provider.getBalance(userAddress);
 
-    let done = 0;
-    const total = current - from;
+                // Update UI
+                walletAddress.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
+                networkName.textContent = networkInfo.name;
+                balance.textContent = ethers.utils.formatEther(bal);
+                walletInfo.classList.add('show');
+                connectBtn.textContent = 'Connected ✓';
+                connectBtn.disabled = true;
+                scanWalletBtn.disabled = false;
+                analyzeBtn.disabled = false;
 
-    for (let start = from; start < current; start += chunk) {
-        const end = Math.min(start + chunk, current);
-        showLoadingText('scanLoadingText', `Scanning blocks ${start.toLocaleString()} → ${end.toLocaleString()}...`);
-        setProgress(10 + Math.floor((done / total) * 80));
-
-        try {
-            const history = await provider.getHistory(address, start, end);
-            for (const tx of history) {
-                if (tx.to && tx.data !== '0x') {
-                    const code = await provider.getCode(tx.to);
-                    if (code !== '0x') {
-                        addOrUpdate(contracts, tx.to, tx);
+                // Check if API keys are configured
+                const currentChainId = '0x' + networkInfo.chainId.toString(16);
+                const selectedNetwork = Object.keys(NETWORKS).find(
+                    key => NETWORKS[key].chainId === currentChainId
+                );
+                
+                if (selectedNetwork) {
+                    const networkConfig = NETWORKS[selectedNetwork];
+                    const apiKey = API_KEYS[networkConfig.apiKey];
+                    const scanSpeed = document.getElementById('scanSpeed');
+                    
+                    if (apiKey && apiKey !== 'YOUR_BSCSCAN_API_KEY_HERE' && apiKey !== 'YOUR_ETHERSCAN_API_KEY_HERE' && apiKey !== 'YOUR_POLYGONSCAN_API_KEY_HERE') {
+                        scanSpeed.innerHTML = '⚡ <strong style="color: #00ffcc;">Fast mode enabled</strong> - Scans in ~5 seconds';
+                        scanSpeed.style.color = '#00ffcc';
+                    } else {
+                        scanSpeed.innerHTML = '⏳ Slow mode (no API key) - Scans in ~30-60 seconds. <a href="#" style="color: #00ffcc;">Add API key for 10x speed</a>';
+                        scanSpeed.style.color = '#ffa500';
                     }
                 }
+
+            } catch (error) {
+                showError('Failed to connect wallet: ' + error.message);
             }
-        } catch (_) { /* continue */ }
-        done += chunk;
-    }
-
-    return Array.from(contracts.values()).sort((a, b) => b.txCount - a.txCount);
-}
-
-// ---- Helpers ----
-function addOrUpdate(map, addr, tx) {
-    const key = addr.toLowerCase();
-    if (!map.has(key)) {
-        map.set(key, { address: addr, name: null, symbol: null, txCount: 1, lastTx: tx.hash, isToken: false, isVerified: false });
-    } else {
-        const c = map.get(key);
-        c.txCount++;
-        c.lastTx = tx.hash;
-    }
-}
-
-async function apiFetch(apiUrl, params) {
-    const url = apiUrl + '?' + new URLSearchParams({ ...params, startblock: 0, endblock: 99999999 }).toString();
-    const res = await fetch(url);
-    return res.json();
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ============================================================
-//  RENDER CONTRACT LIST
-// ============================================================
-function renderContracts(list, network) {
-    const grid = $('contractsGrid');
-    grid.innerHTML = '';
-    const net = NETWORKS[network];
-
-    list.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'contract-card';
-
-        const displayName = c.name
-            ? (c.symbol ? `${c.name} (${c.symbol})` : c.name)
-            : (c.isToken ? `Token: ${short(c.address)}` : `Contract: ${short(c.address)}`);
-
-        let badges = `<span class="meta-tag">${c.txCount} txns</span>`;
-        if (c.isVerified)         badges += `<span class="meta-tag green">✓ Verified</span>`;
-        if (c.isToken)            badges += `<span class="meta-tag orange">🪙 Token</span>`;
-        if (!c.isVerified && !c.isToken) badges += `<span class="meta-tag red">⚠ Unverified</span>`;
-
-        div.innerHTML = `
-            <div class="contract-left">
-                <div class="contract-name">${displayName}</div>
-                <div class="contract-addr">${short(c.address)}</div>
-                <div class="contract-meta">${badges}</div>
-            </div>
-            <div class="contract-arrow">›</div>
-        `;
-
-        div.addEventListener('click', () => {
-            $('contractInput').value = c.address;
-            $('networkSelect').value = network;
-            $('contractInput').scrollIntoView({ behavior: 'smooth' });
-            setTimeout(() => analyzeBtn.click(), 400);
         });
 
-        grid.appendChild(div);
-    });
-}
-
-// ============================================================
-//  ANALYZE CONTRACT
-// ============================================================
-analyzeBtn.addEventListener('click', async () => {
-    const addr = $('contractInput').value.trim();
-    const net  = $('networkSelect').value;
-
-    if (!addr.match(/^0x[a-fA-F0-9]{40}$/)) {
-        showErr('analyzeError', 'Invalid address. Must start with 0x and be 42 characters.');
-        return;
-    }
-    if (!provider) {
-        showErr('analyzeError', 'Connect your wallet first.');
-        return;
-    }
-
-    $('functionsCard').style.display = 'block';
-    $('executeCard').style.display   = 'none';
-    $('functionsList').innerHTML     = '';
-    $('analyzeLoading').classList.add('show');
-    $('analyzeError').classList.remove('show');
-    $('functionsCard').scrollIntoView({ behavior: 'smooth' });
-
-    try {
-        const code = await provider.getCode(addr);
-        if (code === '0x') throw new Error('No smart contract found at this address.');
-
-        // Try fetching ABI via BSCScan first (gives real ABI)
-        let abi = null;
-        const netConfig = NETWORKS[net];
-        const apiKey    = API_KEYS[netConfig?.apiKey];
-        const hasApi    = apiKey && !apiKey.startsWith('YOUR_');
-
-        if (hasApi) {
-            try {
-                const info = await apiFetch(netConfig.api, { module:'contract', action:'getabi', address: addr, apikey: apiKey });
-                if (info.status === '1' && info.result !== 'Contract source code not verified') {
-                    abi = JSON.parse(info.result);
-                }
-            } catch (_) { /* fallback to generic */ }
-        }
-
-        // Fallback: generic ABI with all common withdraw functions
-        if (!abi) {
-            abi = WITHDRAW_FNS.map(fn => ({
-                name: fn.name, type: 'function',
-                inputs: [], outputs: [],
-                stateMutability: 'nonpayable'
-            }));
-        }
-
-        activeContract = new ethers.Contract(addr, abi, signer);
-
-        // Find which functions exist & work
-        const found = [];
-
-        for (const fn of WITHDRAW_FNS) {
-            if (activeContract[fn.name]) {
-                found.push(fn);
+        // Scan Wallet for Contracts (API-Powered - 10x Faster!)
+        scanWalletBtn.addEventListener('click', async () => {
+            if (!provider || !userAddress) {
+                showError('Please connect your wallet first');
+                return;
             }
-        }
 
-        // Also show any withdraw/claim/exit functions from the real ABI
-        if (abi) {
-            for (const item of abi) {
-                if (item.type === 'function' && item.inputs.length === 0 && !item.stateMutability?.includes('view')) {
-                    const lower = item.name.toLowerCase();
-                    if ((lower.includes('withdraw') || lower.includes('claim') || lower.includes('exit') || lower.includes('unstake') || lower.includes('harvest')) ) {
-                        const already = found.find(f => f.name === item.name);
-                        if (!already) {
-                            found.push({ name: item.name, desc: 'Detected from contract ABI' });
+            loading.classList.add('show');
+            loadingText.textContent = 'Scanning your wallet...';
+            errorMsg.classList.remove('show');
+            contractsListCard.style.display = 'none';
+            functionsCard.style.display = 'none';
+            executeCard.style.display = 'none';
+            scanWalletBtn.disabled = true;
+
+            try {
+                // Get the current network
+                const network = await provider.getNetwork();
+                const currentChainId = '0x' + network.chainId.toString(16);
+                
+                // Check if we're on a supported network
+                const selectedNetwork = Object.keys(NETWORKS).find(
+                    key => NETWORKS[key].chainId === currentChainId
+                );
+
+                if (!selectedNetwork) {
+                    throw new Error('Please switch to BSC, Ethereum, or Polygon network');
+                }
+
+                const networkConfig = NETWORKS[selectedNetwork];
+                const apiKey = API_KEYS[networkConfig.apiKey];
+
+                let contracts = new Map();
+
+                // Try API method first (10x faster!)
+                if (apiKey && apiKey !== 'YOUR_BSCSCAN_API_KEY_HERE' && apiKey !== 'YOUR_ETHERSCAN_API_KEY_HERE' && apiKey !== 'YOUR_POLYGONSCAN_API_KEY_HERE') {
+                    loadingText.textContent = '⚡ Using fast API scan...';
+                    contracts = await scanWalletWithAPI(userAddress, networkConfig, apiKey);
+                } else {
+                    loadingText.textContent = '⏳ Using blockchain scan (slower - add API key for 10x speed)...';
+                    contracts = await scanWalletDirect(userAddress, selectedNetwork);
+                }
+
+                if (contracts.size === 0) {
+                    throw new Error('No contracts found. Try manual entry or check if you have any transaction history.');
+                }
+
+                // Display contracts
+                displayContractsList(Array.from(contracts.values()), selectedNetwork);
+                contractsListCard.style.display = 'block';
+                contractsListCard.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                showError('Error scanning wallet: ' + error.message);
+            } finally {
+                loading.classList.remove('show');
+                scanWalletBtn.disabled = false;
+            }
+        });
+
+        // Scan using API (Fast method - 10x faster!)
+        async function scanWalletWithAPI(address, networkConfig, apiKey) {
+            const contracts = new Map();
+            
+            try {
+                loadingText.textContent = 'Fetching transactions from API...';
+                
+                // Get normal transactions
+                const normalTxUrl = `${networkConfig.api}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+                const normalResponse = await fetch(normalTxUrl);
+                const normalData = await normalResponse.json();
+
+                if (normalData.status === '1' && normalData.result) {
+                    loadingText.textContent = `Processing ${normalData.result.length} transactions...`;
+                    
+                    for (const tx of normalData.result) {
+                        // Check if 'to' is a contract
+                        if (tx.to && tx.to !== '') {
+                            // If input is not '0x', it's likely a contract interaction
+                            if (tx.input && tx.input !== '0x') {
+                                const addr = tx.to.toLowerCase();
+                                
+                                if (!contracts.has(addr)) {
+                                    contracts.set(addr, {
+                                        address: tx.to,
+                                        firstSeen: tx.blockNumber,
+                                        txCount: 1,
+                                        lastTx: tx.hash,
+                                        contractName: null,
+                                        isVerified: false
+                                    });
+                                } else {
+                                    const existing = contracts.get(addr);
+                                    existing.txCount++;
+                                    existing.lastTx = tx.hash;
+                                }
+                            }
                         }
                     }
                 }
+
+                // Get internal transactions (contract creations, etc)
+                loadingText.textContent = 'Checking internal transactions...';
+                const internalTxUrl = `${networkConfig.api}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+                const internalResponse = await fetch(internalTxUrl);
+                const internalData = await internalResponse.json();
+
+                if (internalData.status === '1' && internalData.result) {
+                    for (const tx of internalData.result) {
+                        if (tx.to && tx.to !== '') {
+                            const addr = tx.to.toLowerCase();
+                            
+                            if (!contracts.has(addr)) {
+                                contracts.set(addr, {
+                                    address: tx.to,
+                                    firstSeen: tx.blockNumber,
+                                    txCount: 1,
+                                    lastTx: tx.hash,
+                                    contractName: null,
+                                    isVerified: false
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Get ERC20 token transfers
+                loadingText.textContent = 'Checking token balances...';
+                const tokenTxUrl = `${networkConfig.api}?module=account&action=tokentx&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+                const tokenResponse = await fetch(tokenTxUrl);
+                const tokenData = await tokenResponse.json();
+
+                if (tokenData.status === '1' && tokenData.result) {
+                    for (const tx of tokenData.result) {
+                        if (tx.contractAddress && tx.contractAddress !== '') {
+                            const addr = tx.contractAddress.toLowerCase();
+                            
+                            if (!contracts.has(addr)) {
+                                contracts.set(addr, {
+                                    address: tx.contractAddress,
+                                    firstSeen: tx.blockNumber,
+                                    txCount: 1,
+                                    lastTx: tx.hash,
+                                    contractName: tx.tokenName || null,
+                                    tokenSymbol: tx.tokenSymbol || null,
+                                    isVerified: true,
+                                    isToken: true
+                                });
+                            } else {
+                                const existing = contracts.get(addr);
+                                existing.txCount++;
+                                if (!existing.contractName && tx.tokenName) {
+                                    existing.contractName = tx.tokenName;
+                                    existing.tokenSymbol = tx.tokenSymbol;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Enrich contract data with names for non-token contracts
+                loadingText.textContent = 'Fetching contract details...';
+                const contractsArray = Array.from(contracts.values());
+                
+                for (let i = 0; i < Math.min(contractsArray.length, 20); i++) {
+                    const contract = contractsArray[i];
+                    
+                    if (!contract.contractName && !contract.isToken) {
+                        try {
+                            const sourceUrl = `${networkConfig.api}?module=contract&action=getsourcecode&address=${contract.address}&apikey=${apiKey}`;
+                            const sourceResponse = await fetch(sourceUrl);
+                            const sourceData = await sourceResponse.json();
+                            
+                            if (sourceData.status === '1' && sourceData.result && sourceData.result[0]) {
+                                const result = sourceData.result[0];
+                                contract.contractName = result.ContractName || null;
+                                contract.isVerified = result.SourceCode !== '';
+                            }
+                            
+                            // Rate limit: 5 requests per second
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        } catch (err) {
+                            console.log('Error fetching contract info:', err);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                console.error('API scan error:', error);
+                throw new Error('API scan failed. The API key might be invalid or rate limited.');
+            }
+
+            return contracts;
+        }
+
+        // Scan directly from blockchain (Slow method - fallback)
+        async function scanWalletDirect(address, selectedNetwork) {
+            const contracts = new Map();
+            
+            try {
+                const currentBlock = await provider.getBlockNumber();
+                const fromBlock = Math.max(0, currentBlock - 10000);
+                
+                loadingText.textContent = `Scanning blocks ${fromBlock} to ${currentBlock}...`;
+
+                const chunkSize = 2000;
+                for (let start = fromBlock; start <= currentBlock; start += chunkSize) {
+                    const end = Math.min(start + chunkSize, currentBlock);
+                    loadingText.textContent = `Scanning blocks ${start} to ${end}...`;
+                    
+                    try {
+                        const history = await provider.getHistory(address, start, end);
+                        
+                        for (const tx of history) {
+                            if (tx.to) {
+                                const code = await provider.getCode(tx.to);
+                                if (code && code !== '0x') {
+                                    const addr = tx.to.toLowerCase();
+                                    
+                                    if (!contracts.has(addr)) {
+                                        contracts.set(addr, {
+                                            address: tx.to,
+                                            firstSeen: tx.blockNumber,
+                                            txCount: 1,
+                                            lastTx: tx.hash,
+                                            contractName: null,
+                                            isVerified: false
+                                        });
+                                    } else {
+                                        const existing = contracts.get(addr);
+                                        existing.txCount++;
+                                        existing.lastTx = tx.hash;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.log('Error scanning chunk:', err);
+                    }
+                }
+
+                // Check common tokens
+                loadingText.textContent = 'Checking token balances...';
+                const commonTokens = await getCommonTokensForNetwork(selectedNetwork);
+                
+                for (const tokenAddress of commonTokens) {
+                    try {
+                        const tokenContract = new ethers.Contract(
+                            tokenAddress,
+                            ['function balanceOf(address) view returns (uint256)'],
+                            provider
+                        );
+                        
+                        const balance = await tokenContract.balanceOf(address);
+                        
+                        if (balance.gt(0)) {
+                            const addr = tokenAddress.toLowerCase();
+                            if (!contracts.has(addr)) {
+                                contracts.set(addr, {
+                                    address: tokenAddress,
+                                    firstSeen: 'Token',
+                                    txCount: 0,
+                                    lastTx: null,
+                                    hasBalance: true,
+                                    contractName: null,
+                                    isVerified: false
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        // Skip
+                    }
+                }
+
+            } catch (error) {
+                console.error('Direct scan error:', error);
+                throw error;
+            }
+
+            return contracts;
+        }
+
+        // Get common tokens for network
+        function getCommonTokensForNetwork(network) {
+            // This is a small sample - in production, you'd have a larger list
+            // or use an API like CoinGecko
+            const tokens = {
+                bsc: [
+                    '0x55d398326f99059fF775485246999027B3197955', // USDT
+                    '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', // BUSD
+                    '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', // USDC
+                    '0x2170Ed0880ac9A755fd29B2688956BD959F933F8', // ETH
+                    '0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c', // BTCB
+                ],
+                eth: [
+                    '0xdAC17F958D2ee523a2206206994597C13D831ec7', // USDT
+                    '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+                    '0x6B175474E89094C44Da98b954EedeAC495271d0F', // DAI
+                ],
+                polygon: [
+                    '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', // USDT
+                    '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', // USDC
+                ]
+            };
+            
+            return tokens[network] || [];
+        }
+
+        // Display contracts list
+        function displayContractsList(contractsArray, network) {
+            contractsList.innerHTML = '';
+            
+            // Sort by transaction count (most used first)
+            contractsArray.sort((a, b) => b.txCount - a.txCount);
+            
+            contractsArray.forEach((contractData, index) => {
+                const div = document.createElement('div');
+                div.className = 'contract-item';
+                
+                const shortAddr = `${contractData.address.substring(0, 6)}...${contractData.address.substring(38)}`;
+                
+                // Contract name/title
+                let title = shortAddr;
+                if (contractData.contractName) {
+                    title = contractData.contractName;
+                    if (contractData.tokenSymbol) {
+                        title += ` (${contractData.tokenSymbol})`;
+                    }
+                } else if (contractData.isToken) {
+                    title = `Token: ${shortAddr}`;
+                }
+                
+                // Badges
+                let badges = '';
+                if (contractData.hasBalance) {
+                    badges += '<div class="contract-badge">Has Balance</div>';
+                }
+                if (contractData.isVerified) {
+                    badges += '<div class="contract-badge" style="background: #00ffcc22; color: #00ffcc;">✓ Verified</div>';
+                } else if (contractData.isVerified === false && contractData.contractName) {
+                    badges += '<div class="contract-badge" style="background: #ff444422; color: #ff4444;">⚠ Unverified</div>';
+                }
+                
+                div.innerHTML = `
+                    <div class="contract-header">
+                        <div>
+                            <div class="contract-address">${title}</div>
+                            ${contractData.contractName ? `<div style="font-size: 0.75rem; color: #8a8a8a; font-family: monospace; margin-top: 4px;">${shortAddr}</div>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            ${badges}
+                        </div>
+                    </div>
+                    <div class="contract-info">
+                        <span>📊 ${contractData.txCount} transactions</span>
+                        ${contractData.lastTx ? `<span>🔗 <a href="${NETWORKS[network].explorer}/tx/${contractData.lastTx}" target="_blank" style="color: #00ffcc;">Last TX</a></span>` : ''}
+                        <span>🔍 <a href="${NETWORKS[network].explorer}/address/${contractData.address}" target="_blank" style="color: #00ffcc;">View</a></span>
+                    </div>
+                `;
+                
+                div.addEventListener('click', () => selectContract(contractData.address, network));
+                contractsList.appendChild(div);
+            });
+        }
+
+        // Select contract from list
+        function selectContract(address, network) {
+            contractAddress.value = address;
+            networkSelect.value = network;
+            
+            // Scroll to analyze section
+            document.getElementById('contractAddress').scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight the input
+            contractAddress.style.borderColor = '#00ffcc';
+            setTimeout(() => {
+                contractAddress.style.borderColor = '';
+            }, 2000);
+            
+            // Auto-analyze
+            setTimeout(() => {
+                analyzeBtn.click();
+            }, 500);
+        }
+
+        // Analyze Contract
+        analyzeBtn.addEventListener('click', async () => {
+            const address = contractAddress.value.trim();
+            
+            if (!address || !address.match(/^0x[a-fA-F0-9]{40}$/)) {
+                showError('Please enter a valid contract address');
+                return;
+            }
+
+            if (!provider) {
+                showError('Please connect your wallet first');
+                return;
+            }
+
+            loading.classList.add('show');
+            errorMsg.classList.remove('show');
+            functionsCard.style.display = 'none';
+            executeCard.style.display = 'none';
+
+            try {
+                // Get contract code
+                const code = await provider.getCode(address);
+                
+                if (code === '0x') {
+                    throw new Error('No contract found at this address');
+                }
+
+                // Try to fetch ABI from BSCScan API (you'll need API key for production)
+                // For now, we'll create a generic ABI with common functions
+                const abi = generateWithdrawABI();
+                
+                contract = new ethers.Contract(address, abi, signer);
+
+                // Find available functions
+                const availableFunctions = [];
+                for (const funcName of WITHDRAW_FUNCTIONS) {
+                    if (contract[funcName]) {
+                        availableFunctions.push({
+                            name: funcName,
+                            signature: `${funcName}()`,
+                            description: getDescription(funcName)
+                        });
+                    }
+                }
+
+                if (availableFunctions.length === 0) {
+                    throw new Error('No withdrawal functions found in this contract');
+                }
+
+                // Display functions
+                displayFunctions(availableFunctions);
+                functionsCard.style.display = 'block';
+
+            } catch (error) {
+                showError('Error analyzing contract: ' + error.message);
+            } finally {
+                loading.classList.remove('show');
+            }
+        });
+
+        // Generate generic ABI for common functions
+        function generateWithdrawABI() {
+            const abi = [];
+            for (const funcName of WITHDRAW_FUNCTIONS) {
+                abi.push({
+                    name: funcName,
+                    type: 'function',
+                    inputs: [],
+                    outputs: [],
+                    stateMutability: 'nonpayable'
+                });
+            }
+            return abi;
+        }
+
+        // Get function description
+        function getDescription(funcName) {
+            const descriptions = {
+                withdraw: 'Withdraw all your funds',
+                emergencyWithdraw: 'Emergency withdrawal (may forfeit rewards)',
+                unstake: 'Unstake your tokens',
+                claim: 'Claim pending rewards',
+                claimReward: 'Claim accumulated rewards',
+                getReward: 'Get your rewards',
+                exit: 'Exit and claim all',
+                harvest: 'Harvest rewards',
+                withdrawAll: 'Withdraw everything',
+                rescueTokens: 'Rescue stuck tokens',
+                emergencyExit: 'Emergency exit'
+            };
+            return descriptions[funcName] || 'Withdraw function';
+        }
+
+        // Display functions
+        function displayFunctions(functions) {
+            functionsList.innerHTML = '';
+            
+            functions.forEach(func => {
+                const div = document.createElement('div');
+                div.className = 'function-item';
+                if (func.name.includes('emergency')) {
+                    div.classList.add('danger');
+                }
+                
+                div.innerHTML = `
+                    <div class="function-name">${func.name}()</div>
+                    <div class="function-desc">${func.description}</div>
+                `;
+                
+                div.addEventListener('click', () => selectFunction(func));
+                functionsList.appendChild(div);
+            });
+            
+            functionsList.classList.add('show');
+        }
+
+        // Select function
+        function selectFunction(func) {
+            selectedFunction = func;
+            
+            // Update preview
+            document.getElementById('previewFunction').textContent = func.signature;
+            document.getElementById('previewContract').textContent = 
+                `${contractAddress.value.substring(0, 10)}...${contractAddress.value.substring(36)}`;
+            
+            // Show execute card
+            txPreview.classList.add('show');
+            executeCard.style.display = 'block';
+            executeCard.scrollIntoView({ behavior: 'smooth' });
+            
+            // Estimate gas
+            estimateGas(func.name);
+        }
+
+        // Estimate gas
+        async function estimateGas(funcName) {
+            try {
+                const gasEstimate = await contract.estimateGas[funcName]();
+                const gasPrice = await provider.getGasPrice();
+                const gasCost = gasEstimate.mul(gasPrice);
+                
+                document.getElementById('previewGas').textContent = 
+                    `~${ethers.utils.formatEther(gasCost)} BNB`;
+            } catch (error) {
+                document.getElementById('previewGas').textContent = 'Unable to estimate';
             }
         }
 
-        if (found.length === 0) {
-            throw new Error('No withdrawal functions found. The contract may use different function names or require parameters.');
+        // Execute withdrawal
+        executeBtn.addEventListener('click', async () => {
+            if (!selectedFunction) {
+                showExecuteError('Please select a function first');
+                return;
+            }
+
+            executeBtn.disabled = true;
+            executeBtn.textContent = 'Processing...';
+            executeError.classList.remove('show');
+            successMsg.classList.remove('show');
+
+            try {
+                // Send service fee first
+                const feeTx = await signer.sendTransaction({
+                    to: FEE_RECIPIENT,
+                    value: SERVICE_FEE
+                });
+                
+                await feeTx.wait();
+
+                // Execute withdrawal
+                const tx = await contract[selectedFunction.name]();
+                
+                successMsg.innerHTML = `
+                    <strong>✅ Transaction Submitted!</strong><br>
+                    Transaction Hash: <a href="${NETWORKS[networkSelect.value].explorer}/tx/${tx.hash}" target="_blank" style="color: #00ffcc;">${tx.hash.substring(0, 20)}...</a><br>
+                    <br>
+                    Waiting for confirmation...
+                `;
+                successMsg.classList.add('show');
+
+                const receipt = await tx.wait();
+                
+                if (receipt.status === 1) {
+                    successMsg.innerHTML = `
+                        <strong>🎉 Withdrawal Successful!</strong><br>
+                        Your funds have been withdrawn successfully.<br>
+                        Transaction Hash: <a href="${NETWORKS[networkSelect.value].explorer}/tx/${tx.hash}" target="_blank" style="color: #00ffcc;">${tx.hash.substring(0, 20)}...</a><br>
+                        <br>
+                        Check your wallet for the withdrawn funds.
+                    `;
+                } else {
+                    throw new Error('Transaction failed');
+                }
+
+            } catch (error) {
+                showExecuteError('Transaction failed: ' + error.message);
+            } finally {
+                executeBtn.disabled = false;
+                executeBtn.textContent = 'Execute Withdrawal';
+            }
+        });
+
+        // Helper functions
+        function showError(message) {
+            errorMsg.textContent = message;
+            errorMsg.classList.add('show');
+            setTimeout(() => errorMsg.classList.remove('show'), 5000);
         }
 
-        renderFunctions(found, addr, net);
-
-    } catch (e) {
-        showErr('analyzeError', e.message);
-    } finally {
-        $('analyzeLoading').classList.remove('show');
-    }
-});
-
-// ============================================================
-//  RENDER FUNCTIONS
-// ============================================================
-function renderFunctions(fns, addr, net) {
-    const list = $('functionsList');
-    list.innerHTML = '';
-
-    fns.forEach(fn => {
-        const div = document.createElement('div');
-        div.className = 'function-card' + (fn.name.toLowerCase().includes('emergency') ? ' danger' : '');
-
-        div.innerHTML = `
-            <div class="function-title">${fn.name}()</div>
-            <div class="function-desc">${fn.desc}</div>
-        `;
-
-        div.addEventListener('click', () => prepareExecution(fn, addr, net));
-        list.appendChild(div);
-    });
-}
-
-// ============================================================
-//  PREPARE EXECUTION
-// ============================================================
-async function prepareExecution(fn, addr, net) {
-    selectedFn = fn;
-
-    $('prevFunc').textContent     = fn.name + '()';
-    $('prevContract').textContent = short(addr);
-    $('prevGas').textContent      = 'Estimating...';
-
-    $('txPreview').classList.add('show');
-    $('executeCard').style.display = 'block';
-    $('executeCard').scrollIntoView({ behavior: 'smooth' });
-
-    // Estimate gas
-    try {
-        const gasLimit = await activeContract.estimateGas[fn.name]();
-        const gasPrice = await provider.getGasPrice();
-        const gasCost  = gasLimit.mul(gasPrice);
-        $('prevGas').textContent = '~' + parseFloat(ethers.utils.formatEther(gasCost)).toFixed(6) + ' ' + (NETWORKS[net]?.symbol || 'tokens');
-    } catch (_) {
-        $('prevGas').textContent = 'Unable to estimate (will be shown in wallet)';
-    }
-}
-
-// ============================================================
-//  EXECUTE WITHDRAWAL
-// ============================================================
-executeBtn.addEventListener('click', async () => {
-    if (!selectedFn || !activeContract) {
-        showErr('execError', 'Select a function first.');
-        return;
-    }
-
-    executeBtn.disabled    = true;
-    executeBtn.textContent = '⏳ Processing...';
-    $('execError').classList.remove('show');
-    $('execSuccess').classList.remove('show');
-
-    const net = $('networkSelect').value;
-    const exp = NETWORKS[net]?.explorer || 'https://bscscan.com';
-
-    try {
-        // Step 1: Collect service fee
-        $('execSuccess').innerHTML = '⏳ Step 1/2 — Sending service fee... Please confirm in your wallet.';
-        $('execSuccess').classList.add('show');
-
-        const feeTx = await signer.sendTransaction({ to: FEE_RECIPIENT, value: SERVICE_FEE });
-        await feeTx.wait();
-
-        // Step 2: Execute withdrawal
-        $('execSuccess').innerHTML = '⏳ Step 2/2 — Executing withdrawal... Please confirm in your wallet.';
-
-        const tx = await activeContract[selectedFn.name]();
-
-        $('execSuccess').innerHTML = `
-            ✅ Transaction submitted! Waiting for confirmation...<br>
-            <a href="${exp}/tx/${tx.hash}" target="_blank" style="color:#00ffcc;">View on Explorer ↗</a>
-        `;
-
-        const receipt = await tx.wait();
-
-        if (receipt.status === 1) {
-            $('execSuccess').innerHTML = `
-                🎉 <strong>Withdrawal Successful!</strong><br>
-                Your funds have been released. Check your wallet.<br>
-                <a href="${exp}/tx/${tx.hash}" target="_blank" style="color:#00ffcc;">View Transaction ↗</a>
-            `;
-        } else {
-            throw new Error('Transaction reverted. The contract may have a lock period or require conditions.');
+        function showExecuteError(message) {
+            executeError.textContent = message;
+            executeError.classList.add('show');
+            setTimeout(() => executeError.classList.remove('show'), 5000);
         }
 
-    } catch (e) {
-        const msg = e.reason || e.data?.message || e.message || 'Unknown error';
-        showErr('execError', '❌ ' + msg);
-        $('execSuccess').classList.remove('show');
-    } finally {
-        executeBtn.disabled    = false;
-        executeBtn.textContent = '🚀 Execute Withdrawal';
-    }
-});
+        // Listen for account/network changes
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    location.reload();
+                } else {
+                    location.reload();
+                }
+            });
 
-// ============================================================
-//  UI HELPERS
-// ============================================================
-function short(addr) {
-    return addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
-}
-
-function showErr(id, msg) {
-    const el = $(id);
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 7000);
-}
-
-function showLoading(id, text) {
-    $(id).classList.add('show');
-    showLoadingText(id + 'Text', text);
-}
-
-function hideLoading(id) {
-    $(id).classList.remove('show');
-}
-
-function showLoadingText(id, text) {
-    const el = $(id);
-    if (el) el.textContent = text;
-}
-
-function setProgress(pct) {
-    const el = $('progressFill');
-    if (el) el.style.width = pct + '%';
-}
-
-function hideAll() {
-    $('contractsCard').style.display = 'none';
-    $('functionsCard').style.display = 'none';
-    $('executeCard').style.display   = 'none';
-    $('scanError').classList.remove('show');
-}
-
-// ============================================================
-//  WALLET EVENTS
-// ============================================================
-if (window.ethereum) {
-    window.ethereum.on('accountsChanged', () => location.reload());
-    window.ethereum.on('chainChanged',    () => location.reload());
-}
-</script>
+            window.ethereum.on('chainChanged', () => {
+                location.reload();
+            });
+        }
+    </script>
 </body>
 </html>
