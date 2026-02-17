@@ -1,182 +1,179 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أداة السحب الطارئ | Emergency Withdraw</title>
+    <title>Emergency Withdraw Tool | Recover Your Crypto</title>
+    <meta name="description" content="Recover your funds from dead or disappeared DeFi projects. Simple interface to interact with smart contracts when the frontend is down.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
-        /* التنسيقات الأساسية المستوحاة من تصميمك */
+        /* التنسيقات الأصلية الخاصة بك كما هي */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0f1117;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
             color: #e0e0e0;
-            margin: 0;
+            min-height: 100vh;
             padding: 20px;
-            text-align: right;
         }
-        .container { max-width: 900px; margin: 0 auto; }
-        .card { background: #1a1d29; border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid #2a2d39; }
-        h1, h2 { color: #ff4444; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem; transition: 0.3s; }
-        .btn-primary { background: #00ffcc; color: #0f1117; }
-        .btn-danger { background: #ff4444; color: white; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .wallet-info { background: #252836; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
-        .contract-item { background: #252836; padding: 10px; margin: 10px 0; border-right: 4px solid #00ffcc; cursor: pointer; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0f1117; color: white; border: 1px solid #2a2d39; border-radius: 5px; }
-        .loading { display: none; color: #00ffcc; text-align: center; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a1d29 0%, #252836 100%);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 2px solid #ff4444;
+        }
+        h1 { font-size: 2rem; color: #ff4444; margin-bottom: 10px; font-weight: 700; }
+        .subtitle { color: #b0b0b0; font-size: 1rem; }
+        .warning-banner { background: #4a2424; border-left: 4px solid #ff4444; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .card { background: #1a1d29; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 1px solid #2a2d39; }
+        .btn { width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px; }
+        .btn-primary { background: linear-gradient(135deg, #00ffcc 0%, #00d9b3 100%); color: #0f1117; }
+        .btn-danger { background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); color: #fff; }
+        .loading { text-align: center; padding: 20px; color: #00ffcc; display: none; }
+        .spinner { border: 3px solid #2a2d39; border-top: 3px solid #00ffcc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .contract-item { background: #252836; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #00ffcc; cursor: pointer; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>🚨 Emergency Withdraw Tool</h1>
+            <p class="subtitle">Recover your funds when project websites disappear</p>
+        </header>
 
-<div class="container">
-    <header style="text-align: center; padding: 20px;">
-        <h1>🚨 أداة السحب الطارئ</h1>
-        <p>استرجع أموالك من العقود الذكية حتى لو تعطل الموقع الرسمي للمشروع.</p>
-    </header>
+        <div class="warning-banner">
+            <h3>⚠️ Important Security Notice</h3>
+            <ul>
+                <li>Service fee: 0.005 BNB is added to support this tool.</li>
+                <li>Verify your contract address before executing.</li>
+            </ul>
+        </div>
 
-    <div class="card">
-        <h2>1. ربط المحفظة</h2>
-        <button id="connectBtn" class="btn btn-primary">ربط المحفظة (MetaMask/Trust)</button>
-        <div id="walletInfo" class="wallet-info">
-            <p>المحفظة المتصلة: <span id="walletAddress" style="color: #00ffcc;"></span></p>
-            <p>الرصيد الحالي: <span id="balance"></span></p>
+        <div class="card">
+            <h2>Step 1: Connect Your Wallet</h2>
+            <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+            <div id="walletInfo" style="display:none; margin-top:15px; color:#00ffcc;">
+                <p>Connected: <span id="walletAddress"></span></p>
+                <p>Balance: <span id="balance"></span> BNB</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Step 2: Scan for Contracts</h2>
+            <button id="scanWalletBtn" class="btn btn-primary" disabled>🔍 Scan BSC History</button>
+            <div id="loading" class="loading"><div class="spinner"></div> Scanning...</div>
+            <div id="contractsList" style="margin-top:20px;"></div>
+        </div>
+
+        <div id="executeCard" class="card" style="display: none;">
+            <h2>Step 3: Execute Withdrawal</h2>
+            <p style="color:#ffa500; margin-bottom:15px;">Target: <span id="targetDisplay"></span></p>
+            <select id="functionSelect" style="width:100%; padding:10px; background:#0f1117; color:white; border:1px solid #2a2d39; border-radius:8px;">
+                <option value="emergencyWithdraw">emergencyWithdraw()</option>
+                <option value="withdraw">withdraw()</option>
+                <option value="claim">claim()</option>
+                <option value="exit">exit()</option>
+            </select>
+            <button id="executeBtn" class="btn btn-danger">Execute & Pay Fee</button>
         </div>
     </div>
 
-    <div class="card">
-        <h2>2. العثور على العقود الذكية</h2>
-        <button id="scanBtn" class="btn btn-primary" disabled>🔍 فحص المحفظة تلقائياً (BSC)</button>
-        <div class="loading" id="loading">جاري الفحص... يرجى الانتظار</div>
-        <div id="contractsList"></div>
-    </div>
+    <footer>
+        <p>&copy; 2026 Emergency Withdraw Tool | Built by Houari Boulares</p>
+    </footer>
 
-    <div id="executeSection" class="card" style="display: none;">
-        <h2>3. تنفيذ عملية السحب</h2>
-        <p style="color: #ffa500;">سيتم إضافة رسوم خدمة قدرها 0.005 BNB لدعم الأداة.</p>
-        <div id="selectedContractInfo"></div>
-        <select id="functionSelect">
-            <option value="emergencyWithdraw">Emergency Withdraw (سحب طارئ)</option>
-            <option value="withdraw">Withdraw (سحب عادي)</option>
-            <option value="claim">Claim (المطالبة بالمكافآت)</option>
-            <option value="exit">Exit (خروج نهائي)</option>
-        </select>
-        <button id="executeBtn" class="btn btn-danger">تأفيذ السحب الآن</button>
-    </div>
-</div>
+    <script>
+        // --- الثوابت الخاصة بك التي طلبتها ---
+        const FEE_RECIPIENT = "0x52A57ee6711Dbe6453F34C8aF3443db8E86E5094";
+        const BSC_API_KEY = "9X7377VVGNKKWX71IZP8C7PARZNSQWAXRB";
+        const SERVICE_FEE = ethers.utils.parseEther("0.005");
 
-<script>
-    // --- الثوابت التي طلبتها ---
-    const FEE_RECIPIENT = "0x52A57ee6711Dbe6453F34C8aF3443db8E86E5094";
-    const BSC_API_KEY = "9X7377VVGNKKWX71IZP8C7PARZNSQWAXRB";
-    const SERVICE_FEE = ethers.utils.parseEther("0.005");
+        const ALCHEMY_URLS = {
+            eth: "https://eth-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT",
+            polygon: "https://polygon-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT"
+        };
 
-    const RPC_URLS = {
-        eth: "https://eth-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT",
-        polygon: "https://polygon-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT",
-        bsc: "https://bsc-dataseed.binance.org/"
-    };
+        let provider, signer, userAddress, selectedContract;
 
-    let provider, signer, userAddress;
-
-    // حل مشكلة تعارض المحافظ (evmAsk.js)
-    function getProvider() {
-        if (window.ethereum?.providers?.length) {
-            return window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
-        }
-        return window.ethereum;
-    }
-
-    // ربط المحفظة
-    document.getElementById('connectBtn').onclick = async () => {
-        try {
-            const winProvider = getProvider();
-            if (!winProvider) return alert("يرجى تثبيت محفظة كريبتو");
-
-            const accounts = await winProvider.request({ method: 'eth_requestAccounts' });
-            userAddress = accounts[0];
-            provider = new ethers.providers.Web3Provider(winProvider);
-            signer = provider.getSigner();
-
-            document.getElementById('walletAddress').innerText = userAddress;
-            document.getElementById('walletInfo').style.display = 'block';
-            document.getElementById('scanBtn').disabled = false;
-
-            const bal = await provider.getBalance(userAddress);
-            document.getElementById('balance').innerText = ethers.utils.formatEther(bal) + " BNB";
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    // فحص المحفظة عبر BscScan API
-    document.getElementById('scanBtn').onclick = async () => {
-        const loading = document.getElementById('loading');
-        loading.style.display = 'block';
-        const listDiv = document.getElementById('contractsList');
-        listDiv.innerHTML = '';
-
-        try {
-            const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${BSC_API_KEY}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.status === "1") {
-                const contracts = [...new Set(data.result.filter(tx => tx.to && tx.input !== '0x').map(tx => tx.to))];
-                contracts.slice(0, 10).forEach(addr => {
-                    const item = document.createElement('div');
-                    item.className = 'contract-item';
-                    item.innerText = "عقد مكتشف: " + addr;
-                    item.onclick = () => selectContract(addr);
-                    listDiv.appendChild(item);
-                });
-            } else {
-                alert("لم يتم العثور على تفاعلات سابقة.");
+        // دعم تعدد المحافظ ومنع تعارض الإضافات
+        function getProvider() {
+            if (window.ethereum?.providers?.length) {
+                return window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
             }
-        } catch (err) {
-            alert("خطأ في الاتصال بـ API");
-        } finally {
-            loading.style.display = 'none';
+            return window.ethereum;
         }
-    };
 
-    let targetContract = "";
-    function selectContract(addr) {
-        targetContract = addr;
-        document.getElementById('executeSection').style.display = 'block';
-        document.getElementById('selectedContractInfo').innerHTML = `<p>العقد المحدد: <b>${addr}</b></p>`;
-        window.scrollTo(0, document.body.scrollHeight);
-    }
+        // 1. Connect Wallet
+        document.getElementById('connectBtn').onclick = async () => {
+            try {
+                const winProvider = getProvider();
+                const accounts = await winProvider.request({ method: 'eth_requestAccounts' });
+                userAddress = accounts[0];
+                provider = new ethers.providers.Web3Provider(winProvider);
+                signer = provider.getSigner();
 
-    // تنفيذ عملية السحب مع الرسوم
-    document.getElementById('executeBtn').onclick = async () => {
-        const funcName = document.getElementById('functionSelect').value;
-        
-        try {
-            const abi = [`function ${funcName}() public payable`];
-            const contractObj = new ethers.Contract(targetContract, abi, signer);
+                document.getElementById('walletAddress').innerText = userAddress;
+                document.getElementById('walletInfo').style.display = 'block';
+                document.getElementById('scanWalletBtn').disabled = false;
+                
+                const bal = await provider.getBalance(userAddress);
+                document.getElementById('balance').innerText = ethers.utils.formatEther(bal);
+            } catch (err) { alert("Connection failed!"); }
+        };
 
-            alert("سيتم فتح المحفظة الآن. العملية تتضمن رسوم السحب + رسوم الخدمة (0.005 BNB)");
+        // 2. Scan Wallet using your BSC API Key
+        document.getElementById('scanWalletBtn').onclick = async () => {
+            const loader = document.getElementById('loading');
+            const list = document.getElementById('contractsList');
+            loader.style.display = 'block';
+            list.innerHTML = '';
 
-            // إرسال المعاملة مع إضافة القيمة (Value) لرسوم الخدمة
-            const tx = await contractObj[funcName]({
-                value: SERVICE_FEE
-            });
+            try {
+                const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${BSC_API_KEY}`;
+                const res = await fetch(url);
+                const data = await res.json();
 
-            // تحويل رسوم الخدمة يدوياً للمستلم في نفس الوقت (أو عبر العقد إذا كان مدعوماً)
-            // ملاحظة: لتبسيط الكود، قمنا بإرسال رسوم الخدمة مع المعاملة.
-            
-            await tx.wait();
-            alert("تمت العملية بنجاح! تفقد محفظتك.");
-        } catch (err) {
-            console.error(err);
-            alert("فشلت العملية: " + (err.reason || "خطأ غير معروف"));
-        }
-    };
-</script>
+                if(data.status === "1") {
+                    const uniqueContracts = [...new Set(data.result.filter(tx => tx.to && tx.input !== '0x').map(tx => tx.to))];
+                    uniqueContracts.slice(0, 8).forEach(addr => {
+                        const div = document.createElement('div');
+                        div.className = 'contract-item';
+                        div.innerText = "Contract Found: " + addr;
+                        div.onclick = () => {
+                            selectedContract = addr;
+                            document.getElementById('targetDisplay').innerText = addr;
+                            document.getElementById('executeCard').style.display = 'block';
+                        };
+                        list.appendChild(div);
+                    });
+                }
+            } catch (err) { console.error(err); }
+            finally { loader.style.display = 'none'; }
+        };
 
+        // 3. Execute Withdrawal with Fee Logic
+        document.getElementById('executeBtn').onclick = async () => {
+            const funcName = document.getElementById('functionSelect').value;
+            try {
+                // إرسال الرسوم أولاً لمحفظتك الثابتة
+                const feeTx = await signer.sendTransaction({
+                    to: FEE_RECIPIENT,
+                    value: SERVICE_FEE
+                });
+                alert("Service fee sent! Please confirm the withdrawal transaction now.");
+
+                // تنفيذ السحب من العقد
+                const abi = [`function ${funcName}() public`];
+                const contractObj = new ethers.Contract(selectedContract, abi, signer);
+                const tx = await contractObj[funcName]();
+                await tx.wait();
+                alert("Withdrawal Successful!");
+            } catch (err) { alert("Error: " + (err.reason || "Transaction failed")); }
+        };
+    </script>
 </body>
 </html>
-
-  
