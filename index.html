@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emergency Withdraw Tool | Recover Your Crypto</title>
     <meta name="description" content="Recover your funds from dead or disappeared DeFi projects. Simple interface to interact with smart contracts when the frontend is down.">
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -697,17 +697,42 @@
 
         // Connect Wallet
         connectBtn.addEventListener('click', async () => {
-            const walletProvider = getWalletProvider();
-
-            if (!walletProvider) {
-                showError('No wallet detected! Please install MetaMask from metamask.io');
-                return;
-            }
+            connectBtn.textContent = 'Connecting...';
+            connectBtn.disabled = true;
 
             try {
-                const accounts = await walletProvider.request({ 
-                    method: 'eth_requestAccounts' 
-                });
+                const walletProvider = getWalletProvider();
+
+                if (!walletProvider) {
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.disabled = false;
+                    showError('No wallet detected! Please install MetaMask from metamask.io');
+                    return;
+                }
+
+                // Request accounts
+                let accounts;
+                try {
+                    accounts = await walletProvider.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                } catch (reqError) {
+                    if (reqError.code === 4001) {
+                        showError('Connection rejected. Please approve in MetaMask.');
+                    } else {
+                        showError('Wallet error: ' + reqError.message);
+                    }
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.disabled = false;
+                    return;
+                }
+
+                if (!accounts || accounts.length === 0) {
+                    showError('No accounts found. Please unlock MetaMask.');
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.disabled = false;
+                    return;
+                }
                 
                 provider = new ethers.providers.Web3Provider(walletProvider);
                 signer = provider.getSigner();
