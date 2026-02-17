@@ -1,179 +1,790 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency Withdraw Tool | Recover Your Crypto</title>
-    <meta name="description" content="Recover your funds from dead or disappeared DeFi projects. Simple interface to interact with smart contracts when the frontend is down.">
+    <title>DeFi Rescue — Recover Your Funds</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Tajawal:wght@300;400;500;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <style>
-        /* التنسيقات الأصلية الخاصة بك كما هي */
+        :root {
+            --bg: #060810;
+            --surface: #0d1020;
+            --surface2: #141728;
+            --border: #1e2340;
+            --accent: #4fffb0;
+            --accent2: #00c8ff;
+            --warn: #ffb344;
+            --danger: #ff4f6a;
+            --text: #e8eaf0;
+            --muted: #6b7090;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f1117 0%, #1a1d29 100%);
-            color: #e0e0e0;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            padding: 20px;
+            overflow-x: hidden;
         }
-        .container { max-width: 800px; margin: 0 auto; }
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, #1a1d29 0%, #252836 100%);
-            border-radius: 16px;
-            margin-bottom: 30px;
-            border: 2px solid #ff4444;
+        body.lang-en { font-family: 'DM Sans', sans-serif; }
+        body.lang-ar { font-family: 'Tajawal', sans-serif; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(79,255,176,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79,255,176,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
         }
-        h1 { font-size: 2rem; color: #ff4444; margin-bottom: 10px; font-weight: 700; }
-        .subtitle { color: #b0b0b0; font-size: 1rem; }
-        .warning-banner { background: #4a2424; border-left: 4px solid #ff4444; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .card { background: #1a1d29; border-radius: 12px; padding: 30px; margin-bottom: 20px; border: 1px solid #2a2d39; }
-        .btn { width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px; }
-        .btn-primary { background: linear-gradient(135deg, #00ffcc 0%, #00d9b3 100%); color: #0f1117; }
-        .btn-danger { background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); color: #fff; }
-        .loading { text-align: center; padding: 20px; color: #00ffcc; display: none; }
-        .spinner { border: 3px solid #2a2d39; border-top: 3px solid #00ffcc; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .contract-item { background: #252836; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #00ffcc; cursor: pointer; }
+
+        .orb { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.12; pointer-events: none; z-index: 0; }
+        .orb1 { width: 500px; height: 500px; background: var(--accent); top: -200px; left: -200px; }
+        .orb2 { width: 400px; height: 400px; background: var(--accent2); bottom: -150px; right: -150px; }
+
+        /* ---- Language Toggle ---- */
+        .lang-bar {
+            position: fixed;
+            top: 16px; right: 20px;
+            z-index: 100;
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        html[dir="rtl"] .lang-bar { right: auto; left: 20px; }
+
+        .lang-btn {
+            padding: 7px 18px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+        body.lang-en .lang-btn { font-family: 'DM Sans', sans-serif; }
+        body.lang-ar .lang-btn { font-family: 'Tajawal', sans-serif; }
+        .lang-btn.active { background: rgba(79,255,176,0.12); color: var(--accent); }
+
+        /* ---- i18n visibility ---- */
+        .en { display: inline; }
+        .ar { display: none; }
+        body.lang-ar .en { display: none; }
+        body.lang-ar .ar { display: inline; }
+        .en-block { display: block; }
+        .ar-block { display: none; }
+        body.lang-ar .en-block { display: none; }
+        body.lang-ar .ar-block { display: block; }
+
+        /* ---- Layout ---- */
+        .container { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 30px 20px 60px; }
+
+        header { text-align: center; padding: 70px 20px 40px; animation: fadeDown 0.6s ease both; }
+
+        .logo-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(79,255,176,0.08); border: 1px solid rgba(79,255,176,0.2);
+            border-radius: 50px; padding: 8px 20px;
+            font-family: 'Space Mono', monospace; font-size: 0.72rem;
+            color: var(--accent); letter-spacing: 2px; margin-bottom: 24px; text-transform: uppercase;
+        }
+
+        .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s ease infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+        h1 {
+            font-size: clamp(1.9rem, 5vw, 2.9rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 60%, var(--accent2) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .subtitle { color: var(--muted); font-size: 1.05rem; font-weight: 300; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+
+        .trust-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 28px 0; animation: fadeUp 0.7s 0.2s ease both; }
+
+        .badge {
+            display: flex; align-items: center; gap: 7px;
+            background: rgba(79,255,176,0.06); border: 1px solid rgba(79,255,176,0.15);
+            border-radius: 50px; padding: 7px 16px; font-size: 0.82rem; color: var(--accent); font-weight: 500;
+        }
+        .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+        /* ---- Info Banner ---- */
+        .info-banner {
+            background: rgba(255,179,68,0.06); border: 1px solid rgba(255,179,68,0.2);
+            border-radius: 12px; padding: 18px 22px; margin-bottom: 24px;
+            display: flex; gap: 14px; align-items: flex-start; animation: fadeUp 0.7s 0.3s ease both;
+        }
+        .info-banner .ico { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+        .info-banner h4 { color: var(--warn); font-size: 0.95rem; margin-bottom: 6px; font-weight: 700; }
+        .info-banner p { color: #a89060; font-size: 0.87rem; line-height: 1.65; }
+
+        /* ---- Cards ---- */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 28px; margin-bottom: 20px;
+            position: relative; overflow: hidden; animation: fadeUp 0.6s ease both;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(79,255,176,0.3), transparent);
+        }
+
+        .card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+
+        .step-num {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(79,255,176,0.1); border: 1px solid rgba(79,255,176,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Mono', monospace; font-size: 0.85rem;
+            color: var(--accent); font-weight: 700; flex-shrink: 0; transition: all 0.3s;
+        }
+        .step-num.done { background: rgba(79,255,176,0.2); border-color: var(--accent); }
+        .card-header h2 { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .card-header p { font-size: 0.82rem; color: var(--muted); margin-top: 3px; }
+
+        /* ---- Network ---- */
+        .network-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+        .net-btn {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px 8px; text-align: center;
+            cursor: pointer; transition: all 0.2s; color: var(--muted); font-size: 0.83rem; font-weight: 500;
+        }
+        body.lang-en .net-btn { font-family: 'DM Sans', sans-serif; }
+        body.lang-ar .net-btn { font-family: 'Tajawal', sans-serif; }
+        .net-btn .net-icon { font-size: 1.5rem; display: block; margin-bottom: 6px; }
+        .net-btn:hover, .net-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(79,255,176,0.05); }
+        .net-btn.active { box-shadow: 0 0 0 1px var(--accent); }
+
+        /* ---- Buttons ---- */
+        .btn {
+            width: 100%; padding: 14px 24px; border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.25s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        body.lang-en .btn { font-family: 'DM Sans', sans-serif; }
+        body.lang-ar .btn { font-family: 'Tajawal', sans-serif; }
+
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #00d9b0); color: #060810; }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(79,255,176,0.3); }
+        .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
+        .btn-outline:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* ---- Wallet info ---- */
+        .wallet-info {
+            background: rgba(79,255,176,0.05); border: 1px solid rgba(79,255,176,0.15);
+            border-radius: 10px; padding: 16px 18px; margin-top: 16px; display: none;
+        }
+        .wallet-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.87rem; }
+        .wallet-row + .wallet-row { margin-top: 8px; }
+        .wallet-label { color: var(--muted); }
+        .wallet-value { font-family: 'Space Mono', monospace; color: var(--accent); font-size: 0.78rem; }
+
+        /* ---- Input ---- */
+        .input-group { margin-bottom: 16px; }
+        .input-label { font-size: 0.83rem; color: var(--muted); margin-bottom: 8px; display: block; }
+        input, select {
+            width: 100%; padding: 13px 16px;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text); font-size: 0.93rem;
+            transition: border-color 0.2s; outline: none;
+        }
+        body.lang-en input, body.lang-en select { font-family: 'DM Sans', sans-serif; }
+        body.lang-ar input, body.lang-ar select { font-family: 'Tajawal', sans-serif; }
+        input:focus, select:focus { border-color: var(--accent); }
+        input::placeholder { color: var(--muted); }
+        select option { background: var(--surface2); }
+
+        /* ---- Contract list ---- */
+        .contract-list { margin-top: 16px; }
+        .contract-item {
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .contract-item:hover, .contract-item.selected { border-color: var(--accent); background: rgba(79,255,176,0.04); }
+        .contract-item.selected { box-shadow: 0 0 0 1px var(--accent); }
+        .contract-addr { font-family: 'Space Mono', monospace; font-size: 0.74rem; color: var(--accent2); word-break: break-all; }
+        .contract-lbl { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+        .contract-arrow { color: var(--muted); font-size: 1.2rem; flex-shrink: 0; }
+
+        /* ---- Loading ---- */
+        .loading { text-align: center; padding: 30px; display: none; }
+        .spinner { width: 38px; height: 38px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
+        .loading p { color: var(--muted); font-size: 0.87rem; }
+
+        /* ---- Fee box ---- */
+        .fee-box { background: rgba(0,200,255,0.05); border: 1px solid rgba(0,200,255,0.15); border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .fee-box h4 { color: var(--accent2); font-size: 0.93rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .fee-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        .fee-row:last-child { border-bottom: none; font-weight: 700; color: #fff; }
+        .fee-key { color: var(--muted); }
+        .fee-val { font-family: 'Space Mono', monospace; color: var(--accent); }
+
+        /* ---- Status ---- */
+        .status-msg { padding: 14px 18px; border-radius: 10px; font-size: 0.88rem; margin-top: 14px; display: none; line-height: 1.6; white-space: pre-line; }
+        .status-msg.success { background: rgba(79,255,176,0.08); border: 1px solid rgba(79,255,176,0.25); color: var(--accent); }
+        .status-msg.error   { background: rgba(255,79,106,0.08);  border: 1px solid rgba(255,79,106,0.25);  color: var(--danger); }
+        .status-msg.info    { background: rgba(0,200,255,0.06);   border: 1px solid rgba(0,200,255,0.2);    color: var(--accent2); }
+
+        /* ---- Donate ---- */
+        .donate-section { background: rgba(79,255,176,0.04); border: 1px dashed rgba(79,255,176,0.22); border-radius: 12px; padding: 22px; margin-top: 20px; text-align: center; }
+        .donate-section h4 { color: var(--accent); font-size: 1rem; margin-bottom: 8px; }
+        .donate-section p { color: var(--muted); font-size: 0.85rem; margin-bottom: 14px; line-height: 1.6; }
+        .btn-donate { background: rgba(79,255,176,0.1); border: 1px solid rgba(79,255,176,0.3); border-radius: 8px; padding: 12px 24px; color: var(--accent); font-size: 0.9rem; font-weight: 700; cursor: pointer; width: 100%; transition: all 0.2s; margin-top: 10px; }
+        body.lang-en .btn-donate { font-family: 'DM Sans', sans-serif; }
+        body.lang-ar .btn-donate { font-family: 'Tajawal', sans-serif; }
+        .btn-donate:hover:not(:disabled) { background: rgba(79,255,176,0.18); transform: translateY(-1px); }
+        .btn-donate:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* ---- Disclaimer ---- */
+        .disclaimer { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin-top: 24px; font-size: 0.82rem; color: var(--muted); line-height: 1.8; }
+        .disclaimer h5 { color: var(--text); font-size: 0.88rem; margin-bottom: 10px; font-weight: 700; }
+        .disclaimer a { color: var(--accent2); text-decoration: none; }
+
+        /* ---- Empty state ---- */
+        .empty-state { text-align: center; padding: 28px; color: var(--muted); display: none; }
+        .empty-state .ico { font-size: 2.2rem; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.86rem; line-height: 1.6; }
+
+        /* ---- Divider ---- */
+        .divider { display: flex; align-items: center; gap: 14px; margin: 16px 0; }
+        .divider span { color: var(--muted); font-size: 0.8rem; flex-shrink: 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        /* ---- Footer ---- */
+        footer { text-align: center; padding: 30px 0 10px; color: var(--muted); font-size: 0.8rem; }
+        footer a { color: var(--accent2); text-decoration: none; }
+
+        .card:nth-child(1){animation-delay:0.05s} .card:nth-child(2){animation-delay:0.12s} .card:nth-child(3){animation-delay:0.19s} .card:nth-child(4){animation-delay:0.26s}
+
+        @keyframes spin    { to { transform: rotate(360deg); } }
+        @keyframes fadeDown{ from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(20px)}  to{opacity:1;transform:translateY(0)} }
+
+        @media(max-width:480px){ .lang-bar{top:10px;right:10px} html[dir="rtl"] .lang-bar{left:10px;right:auto} .badge{font-size:0.77rem;padding:6px 12px} }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🚨 Emergency Withdraw Tool</h1>
-            <p class="subtitle">Recover your funds when project websites disappear</p>
-        </header>
+<body class="lang-en">
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
 
-        <div class="warning-banner">
-            <h3>⚠️ Important Security Notice</h3>
-            <ul>
-                <li>Service fee: 0.005 BNB is added to support this tool.</li>
-                <li>Verify your contract address before executing.</li>
-            </ul>
+<!-- Language Toggle -->
+<div class="lang-bar">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn"        onclick="setLang('ar')">عربي</button>
+</div>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo-badge">
+            <span class="live-dot"></span>
+            <span class="en">DeFi RESCUE — Free &amp; Open Source</span>
+            <span class="ar">DeFi RESCUE — مجانية ومفتوحة المصدر</span>
         </div>
+        <h1>
+            <span class="en-block">Recover Your Locked<br>DeFi Funds</span>
+            <span class="ar-block">استرداد أموالك<br>من العقود الذكية</span>
+        </h1>
+        <p class="subtitle">
+            <span class="en">Project website gone? Your funds are still on the blockchain. We help you reach them safely — directly and for free.</span>
+            <span class="ar">اختفى موقع المشروع؟ أموالك لا تزال في البلوكتشين. ساعدك في الوصول إليها مباشرةً وبأمان.</span>
+        </p>
+        <div class="trust-strip">
+            <div class="badge"><span class="dot"></span><span class="en">No private keys</span><span class="ar">بدون مفتاح خاص</span></div>
+            <div class="badge"><span class="dot"></span><span class="en">100% Free</span><span class="ar">مجانية بالكامل</span></div>
+            <div class="badge"><span class="dot"></span><span class="en">Open Source</span><span class="ar">مفتوحة المصدر</span></div>
+            <div class="badge"><span class="dot"></span><span class="en">No upfront fees</span><span class="ar">لا رسوم مسبقة</span></div>
+        </div>
+    </header>
 
-        <div class="card">
-            <h2>Step 1: Connect Your Wallet</h2>
-            <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
-            <div id="walletInfo" style="display:none; margin-top:15px; color:#00ffcc;">
-                <p>Connected: <span id="walletAddress"></span></p>
-                <p>Balance: <span id="balance"></span> BNB</p>
+    <!-- INFO BANNER -->
+    <div class="info-banner">
+        <div class="ico">ℹ️</div>
+        <div>
+            <h4><span class="en">How does this work?</span><span class="ar">كيف تعمل هذه الأداة؟</span></h4>
+            <p>
+                <span class="en">Connects directly to the smart contract and calls publicly available withdrawal functions. <strong style="color:var(--warn)">No fees charged upfront.</strong> Optional donation only after a successful withdrawal.</span>
+                <span class="ar">تتصل مباشرةً بالعقد الذكي وتستدعي دوال السحب المتاحة علنًا. <strong style="color:var(--warn)">لا رسوم تُدفع مسبقًا.</strong> التبرع اختياري فقط بعد نجاح العملية.</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- STEP 1: NETWORK -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num" id="step1num">1</div>
+            <div>
+                <h2><span class="en">Select Network</span><span class="ar">اختر الشبكة</span></h2>
+                <p><span class="en">The blockchain where your contract lives</span><span class="ar">الشبكة التي يوجد فيها عقدك</span></p>
+            </div>
+        </div>
+        <div class="network-grid">
+            <button class="net-btn active" onclick="selectNetwork(this,'bsc')"><span class="net-icon">🟡</span>BSC / BNB</button>
+            <button class="net-btn"        onclick="selectNetwork(this,'eth')"><span class="net-icon">🔷</span>Ethereum</button>
+            <button class="net-btn"        onclick="selectNetwork(this,'poly')"><span class="net-icon">🟣</span>Polygon</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: CONNECT -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num" id="step2num">2</div>
+            <div>
+                <h2><span class="en">Connect Wallet</span><span class="ar">ربط المحفظة</span></h2>
+                <p><span class="en">MetaMask or any compatible wallet</span><span class="ar">MetaMask أو أي محفظة متوافقة</span></p>
+            </div>
+        </div>
+        <button id="connectBtn" class="btn btn-primary" onclick="connectWallet()">
+            🔗 <span class="en">Connect Wallet</span><span class="ar">ربط المحفظة</span>
+        </button>
+        <div id="walletInfo" class="wallet-info">
+            <div class="wallet-row">
+                <span class="wallet-label"><span class="en">Address</span><span class="ar">العنوان</span></span>
+                <span class="wallet-value" id="walletAddress">—</span>
+            </div>
+            <div class="wallet-row">
+                <span class="wallet-label"><span class="en">Balance</span><span class="ar">الرصيد</span></span>
+                <span class="wallet-value" id="balance">—</span>
+            </div>
+            <div class="wallet-row">
+                <span class="wallet-label"><span class="en">Network</span><span class="ar">الشبكة</span></span>
+                <span class="wallet-value" id="connectedNetwork">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 3: CONTRACT -->
+    <div class="card">
+        <div class="card-header">
+            <div class="step-num" id="step3num">3</div>
+            <div>
+                <h2><span class="en">Identify the Contract</span><span class="ar">حدد العقد الذكي</span></h2>
+                <p><span class="en">Enter manually or scan your history</span><span class="ar">أدخل يدويًا أو استعرض سجل معاملاتك</span></p>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Step 2: Scan for Contracts</h2>
-            <button id="scanWalletBtn" class="btn btn-primary" disabled>🔍 Scan BSC History</button>
-            <div id="loading" class="loading"><div class="spinner"></div> Scanning...</div>
-            <div id="contractsList" style="margin-top:20px;"></div>
+        <div class="input-group">
+            <label class="input-label"><span class="en">Contract Address</span><span class="ar">عنوان العقد</span></label>
+            <input type="text" id="contractInput" placeholder="0x..." oninput="onContractInput()" />
         </div>
 
-        <div id="executeCard" class="card" style="display: none;">
-            <h2>Step 3: Execute Withdrawal</h2>
-            <p style="color:#ffa500; margin-bottom:15px;">Target: <span id="targetDisplay"></span></p>
-            <select id="functionSelect" style="width:100%; padding:10px; background:#0f1117; color:white; border:1px solid #2a2d39; border-radius:8px;">
-                <option value="emergencyWithdraw">emergencyWithdraw()</option>
-                <option value="withdraw">withdraw()</option>
-                <option value="claim">claim()</option>
-                <option value="exit">exit()</option>
+        <div class="divider"><span class="en">or</span><span class="ar">أو</span></div>
+
+        <button id="scanBtn" class="btn btn-outline" disabled onclick="scanHistory()">
+            🔍 <span class="en">Scan My Transaction History</span><span class="ar">استعراض سجل معاملاتي</span>
+        </button>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p><span class="en">Scanning transaction history...</span><span class="ar">جاري فحص سجل المعاملات...</span></p>
+        </div>
+        <div id="emptyState" class="empty-state">
+            <div class="ico">📭</div>
+            <p><span class="en">No contracts found in recent transactions.<br>Enter the address manually above.</span><span class="ar">لم يتم العثور على عقود.<br>يمكنك إدخال العنوان يدويًا أعلاه.</span></p>
+        </div>
+        <div id="contractList" class="contract-list"></div>
+    </div>
+
+    <!-- STEP 4: EXECUTE -->
+    <div id="executeCard" class="card" style="display:none;">
+        <div class="card-header">
+            <div class="step-num">4</div>
+            <div>
+                <h2><span class="en">Execute Withdrawal</span><span class="ar">تنفيذ السحب</span></h2>
+                <p><span class="en">Choose the right function and proceed</span><span class="ar">اختر الدالة المناسبة وابدأ العملية</span></p>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label"><span class="en">Target Contract</span><span class="ar">العقد المستهدف</span></label>
+            <input type="text" id="targetDisplay" readonly style="background:var(--bg);color:var(--accent2);font-family:'Space Mono',monospace;font-size:0.75rem;" />
+        </div>
+
+        <div class="input-group">
+            <label class="input-label"><span class="en">Withdrawal Function</span><span class="ar">دالة السحب</span></label>
+            <select id="functionSelect" onchange="estimateGas()">
+                <option value="emergencyWithdraw">emergencyWithdraw() — Emergency</option>
+                <option value="withdraw">withdraw() — Standard</option>
+                <option value="claim">claim() — Claim Rewards</option>
+                <option value="exit">exit() — Full Exit</option>
+                <option value="getReward">getReward() — Get Earnings</option>
             </select>
-            <button id="executeBtn" class="btn btn-danger">Execute & Pay Fee</button>
+        </div>
+
+        <div class="input-group">
+            <label class="input-label"><span class="en">Pool ID (leave 0 if unsure)</span><span class="ar">Pool ID (اتركه 0 إذا لم تعرف)</span></label>
+            <input type="number" id="poolIdInput" value="0" min="0" onchange="estimateGas()" />
+        </div>
+
+        <div class="fee-box">
+            <h4>💡 <span class="en">Transaction Details — Full Transparency</span><span class="ar">تفاصيل العملية — شفافية كاملة</span></h4>
+            <div class="fee-row">
+                <span class="fee-key"><span class="en">Tool Fee</span><span class="ar">رسوم الأداة</span></span>
+                <span class="fee-val" style="color:var(--accent)"><span class="en">FREE ✓</span><span class="ar">مجانية ✓</span></span>
+            </div>
+            <div class="fee-row">
+                <span class="fee-key"><span class="en">Network Gas</span><span class="ar">Gas (رسوم الشبكة)</span></span>
+                <span class="fee-val" id="gasEstimate">—</span>
+            </div>
+            <div class="fee-row">
+                <span class="fee-key"><span class="en">Paid upfront</span><span class="ar">ما يُدفع مسبقًا</span></span>
+                <span class="fee-val" style="color:#fff"><span class="en">Gas only (to network)</span><span class="ar">Gas فقط (للشبكة)</span></span>
+            </div>
+        </div>
+
+        <button id="executeBtn" class="btn btn-primary" onclick="executeWithdraw()">
+            ⚡ <span class="en">Execute Withdrawal Now</span><span class="ar">تنفيذ السحب الآن</span>
+        </button>
+
+        <div id="executeStatus" class="status-msg"></div>
+
+        <!-- Optional Donation -->
+        <div id="donateSection" class="donate-section" style="display:none;">
+            <h4>🎉 <span class="en">Withdrawal Successful!</span><span class="ar">تم السحب بنجاح!</span></h4>
+            <p>
+                <span class="en">Did this tool help you? Support it with an optional donation — you pick the amount. Completely voluntary.</span>
+                <span class="ar">هل أعجبتك الأداة؟ يمكنك دعمنا بتبرع اختياري — أنت تختار المبلغ. غير إلزامي تمامًا.</span>
+            </p>
+            <!-- Visible wallet address -->
+            <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:14px; text-align:center;">
+                <div style="font-size:0.75rem; color:var(--muted); margin-bottom:6px;">
+                    <span class="en">Donation wallet address</span>
+                    <span class="ar">عنوان محفظة التبرع</span>
+                </div>
+                <div style="font-family:'Space Mono',monospace; font-size:0.72rem; color:var(--accent2); word-break:break-all; line-height:1.6;">
+                    0xEc64E45fC0801A32c066337A284F3711Ca8300e6
+                </div>
+                <button onclick="copyWallet(this)" style="margin-top:8px; background:transparent; border:1px solid var(--border); border-radius:6px; padding:5px 14px; color:var(--muted); font-size:0.75rem; cursor:pointer; transition:all 0.2s;">
+                    <span class="en">📋 Copy</span><span class="ar">📋 نسخ</span>
+                </button>
+            </div>
+
+            <select id="donateAmount" style="margin-bottom:6px;">
+                <option value="0.001">0.001 — Symbolic / رمزي</option>
+                <option value="0.003" selected>0.003 — Thank you! / شكرًا</option>
+                <option value="0.005">0.005 — Generous! / سخي!</option>
+                <option value="0">No thanks / لا شكرًا</option>
+            </select>
+            <button class="btn-donate" id="donateBtn" onclick="sendDonation()">
+                <span class="en">Send Optional Donation</span><span class="ar">إرسال التبرع الاختياري</span>
+            </button>
+            <div id="donateStatus" class="status-msg"></div>
+        </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+        <h5><span class="en">⚠️ Important — Read Before Using</span><span class="ar">⚠️ تنبيه مهم — اقرأ قبل الاستخدام</span></h5>
+        <div class="en-block">
+            • This tool interacts with blockchain smart contracts. <strong>We bear no responsibility for losses</strong> from broken or fraudulent contracts.<br>
+            • Always verify the contract on <a href="https://bscscan.com" target="_blank">BscScan</a>, <a href="https://etherscan.io" target="_blank">Etherscan</a>, or <a href="https://polygonscan.com" target="_blank">Polygonscan</a> before executing.<br>
+            • Some contracts have time locks or withdrawal conditions — failure ≠ tool bug.<br>
+            • <strong>Never share your private keys with any tool.</strong> This tool never asks for them.
+        </div>
+        <div class="ar-block">
+            • هذه الأداة تتفاعل مع عقود ذكية على البلوكتشين. <strong>لا نتحمل مسؤولية أي خسائر</strong> من عقود معطوبة أو احتيالية.<br>
+            • تأكد من العقد عبر <a href="https://bscscan.com" target="_blank">BscScan</a> أو <a href="https://etherscan.io" target="_blank">Etherscan</a> قبل التنفيذ.<br>
+            • بعض العقود تحتوي على قفل زمني — الفشل لا يعني وجود خلل في الأداة.<br>
+            • <strong>لا ترسل مفاتيحك الخاصة لأي أداة.</strong> هذه الأداة لا تطلبها إطلاقًا.
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2026 Emergency Withdraw Tool | Built by Houari Boulares</p>
+        <p>DeFi Rescue — Free &amp; Open Source | Built by Houari Boulares</p>
+        <p style="margin-top:6px;">
+            <span class="en">No upfront fees · No data collection · Open code</span>
+            <span class="ar">لا رسوم مسبقة · لا جمع بيانات · كود مفتوح</span>
+        </p>
     </footer>
+</div>
 
-    <script>
-        // --- الثوابت الخاصة بك التي طلبتها ---
-        const FEE_RECIPIENT = "0x52A57ee6711Dbe6453F34C8aF3443db8E86E5094";
-        const BSC_API_KEY = "9X7377VVGNKKWX71IZP8C7PARZNSQWAXRB";
-        const SERVICE_FEE = ethers.utils.parseEther("0.005");
+<script>
+// ============================
+// LANGUAGE
+// ============================
+let currentLang = 'en';
 
-        const ALCHEMY_URLS = {
-            eth: "https://eth-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT",
-            polygon: "https://polygon-mainnet.g.alchemy.com/v2/-nlfxnEP1jvwjMZFHTgZT"
-        };
+function setLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.body.className = `lang-${lang}`;
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        const isEn = btn.textContent.trim() === 'EN';
+        btn.classList.toggle('active', lang === 'en' ? isEn : !isEn);
+    });
+}
 
-        let provider, signer, userAddress, selectedContract;
+// ============================
+// NETWORKS
+// ============================
+const NETWORKS = {
+    bsc:  { name:"BSC / BNB Chain", chainId:"0x38", symbol:"BNB",   scan:"https://api.bscscan.com/api",     scanKey:"9X7377VVGNKKWX71IZP8C7PARZNSQWAXRB" },
+    eth:  { name:"Ethereum",         chainId:"0x1",  symbol:"ETH",   scan:"https://api.etherscan.io/api",    scanKey:"S141HEFMBD7Y7X4E16D62U6XKN9YU9HFFZ" },
+    poly: { name:"Polygon",          chainId:"0x89", symbol:"MATIC", scan:"https://api.polygonscan.com/api", scanKey:"S141HEFMBD7Y7X4E16D62U6XKN9YU9HFFZ" }
+};
+const DONATION_WALLET = "0xEc64E45fC0801A32c066337A284F3711Ca8300e6";
 
-        // دعم تعدد المحافظ ومنع تعارض الإضافات
-        function getProvider() {
-            if (window.ethereum?.providers?.length) {
-                return window.ethereum.providers.find(p => p.isMetaMask) || window.ethereum.providers[0];
-            }
-            return window.ethereum;
-        }
+let provider, signer, userAddress;
+let selectedNetwork = NETWORKS.bsc;
+let selectedContract = null;
 
-        // 1. Connect Wallet
-        document.getElementById('connectBtn').onclick = async () => {
-            try {
-                const winProvider = getProvider();
-                const accounts = await winProvider.request({ method: 'eth_requestAccounts' });
-                userAddress = accounts[0];
-                provider = new ethers.providers.Web3Provider(winProvider);
-                signer = provider.getSigner();
+// ============================
+// NETWORK SELECT
+// ============================
+function selectNetwork(btn, key) {
+    document.querySelectorAll('.net-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedNetwork = NETWORKS[key];
+}
 
-                document.getElementById('walletAddress').innerText = userAddress;
-                document.getElementById('walletInfo').style.display = 'block';
-                document.getElementById('scanWalletBtn').disabled = false;
-                
-                const bal = await provider.getBalance(userAddress);
-                document.getElementById('balance').innerText = ethers.utils.formatEther(bal);
-            } catch (err) { alert("Connection failed!"); }
-        };
+// ============================
+// CONNECT WALLET
+// ============================
+async function connectWallet() {
+    if (!window.ethereum) {
+        showStatus('executeStatus', 'error',
+            currentLang === 'en' ? 'MetaMask not detected. Please install it first.' : 'MetaMask غير مثبتة. يرجى تثبيتها أولًا.');
+        return;
+    }
+    try {
+        const wp = window.ethereum.providers?.find(p => p.isMetaMask) || window.ethereum;
+        await wp.request({ method: 'eth_requestAccounts' });
+        try { await wp.request({ method:'wallet_switchEthereumChain', params:[{chainId: selectedNetwork.chainId}] }); } catch(e){}
 
-        // 2. Scan Wallet using your BSC API Key
-        document.getElementById('scanWalletBtn').onclick = async () => {
-            const loader = document.getElementById('loading');
-            const list = document.getElementById('contractsList');
-            loader.style.display = 'block';
-            list.innerHTML = '';
+        provider = new ethers.providers.Web3Provider(wp);
+        signer   = provider.getSigner();
+        userAddress = await signer.getAddress();
 
-            try {
-                const url = `https://api.bscscan.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${BSC_API_KEY}`;
-                const res = await fetch(url);
-                const data = await res.json();
+        const bal = await provider.getBalance(userAddress);
+        const net = await provider.getNetwork();
 
-                if(data.status === "1") {
-                    const uniqueContracts = [...new Set(data.result.filter(tx => tx.to && tx.input !== '0x').map(tx => tx.to))];
-                    uniqueContracts.slice(0, 8).forEach(addr => {
-                        const div = document.createElement('div');
-                        div.className = 'contract-item';
-                        div.innerText = "Contract Found: " + addr;
-                        div.onclick = () => {
-                            selectedContract = addr;
-                            document.getElementById('targetDisplay').innerText = addr;
-                            document.getElementById('executeCard').style.display = 'block';
-                        };
-                        list.appendChild(div);
-                    });
-                }
-            } catch (err) { console.error(err); }
-            finally { loader.style.display = 'none'; }
-        };
+        document.getElementById('walletAddress').textContent    = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
+        document.getElementById('balance').textContent          = parseFloat(ethers.utils.formatEther(bal)).toFixed(4)+' '+selectedNetwork.symbol;
+        document.getElementById('connectedNetwork').textContent = net.name || 'Chain '+net.chainId;
+        document.getElementById('walletInfo').style.display     = 'block';
 
-        // 3. Execute Withdrawal with Fee Logic
-        document.getElementById('executeBtn').onclick = async () => {
-            const funcName = document.getElementById('functionSelect').value;
-            try {
-                // إرسال الرسوم أولاً لمحفظتك الثابتة
-                const feeTx = await signer.sendTransaction({
-                    to: FEE_RECIPIENT,
-                    value: SERVICE_FEE
-                });
-                alert("Service fee sent! Please confirm the withdrawal transaction now.");
+        const cb = document.getElementById('connectBtn');
+        cb.innerHTML = '✅ <span class="en">Connected</span><span class="ar">متصل</span>';
+        setLang(currentLang);
+        cb.disabled = true;
+        document.getElementById('scanBtn').disabled = false;
+        markDone('step2num');
+    } catch(err) {
+        alert((currentLang==='en'?'Connection failed: ':'فشل الاتصال: ')+(err.message||''));
+    }
+}
 
-                // تنفيذ السحب من العقد
-                const abi = [`function ${funcName}() public`];
-                const contractObj = new ethers.Contract(selectedContract, abi, signer);
-                const tx = await contractObj[funcName]();
-                await tx.wait();
-                alert("Withdrawal Successful!");
-            } catch (err) { alert("Error: " + (err.reason || "Transaction failed")); }
-        };
-    </script>
+// ============================
+// MANUAL INPUT
+// ============================
+function onContractInput() {
+    const val = document.getElementById('contractInput').value.trim();
+    if (ethers.utils.isAddress(val)) {
+        selectedContract = val;
+        document.getElementById('targetDisplay').value = val;
+        document.getElementById('executeCard').style.display = 'block';
+        markDone('step3num');
+        estimateGas();
+    }
+}
+
+function markDone(id) {
+    const el = document.getElementById(id);
+    el.classList.add('done');
+    el.textContent = '✓';
+}
+
+// ============================
+// SCAN HISTORY
+// ============================
+async function scanHistory() {
+    if (!userAddress) return;
+    const loader = document.getElementById('loading');
+    const list   = document.getElementById('contractList');
+    const empty  = document.getElementById('emptyState');
+
+    loader.style.display = 'block';
+    list.innerHTML = '';
+    empty.style.display = 'none';
+
+    try {
+        const { scan, scanKey } = selectedNetwork;
+        const url = `${scan}?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc&apikey=${scanKey}`;
+        const res  = await fetch(url);
+        const data = await res.json();
+
+        if (data.status === "1" && data.result?.length) {
+            const unique = [...new Set(
+                data.result.filter(tx => tx.to && tx.input && tx.input !== '0x').map(tx => tx.to.toLowerCase())
+            )].slice(0, 10);
+
+            if (!unique.length) { empty.style.display = 'block'; return; }
+
+            unique.forEach(addr => {
+                const item = document.createElement('div');
+                item.className = 'contract-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="contract-lbl">${currentLang==='en'?'Smart Contract':'عقد ذكي'}</div>
+                        <div class="contract-addr">${addr}</div>
+                    </div>
+                    <span class="contract-arrow">›</span>`;
+                item.onclick = () => {
+                    document.querySelectorAll('.contract-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    selectedContract = addr;
+                    document.getElementById('contractInput').value = addr;
+                    document.getElementById('targetDisplay').value = addr;
+                    document.getElementById('executeCard').style.display = 'block';
+                    markDone('step3num');
+                    estimateGas();
+                    document.getElementById('executeCard').scrollIntoView({ behavior:'smooth' });
+                };
+                list.appendChild(item);
+            });
+        } else { empty.style.display = 'block'; }
+    } catch(e) { console.error(e); empty.style.display = 'block'; }
+    finally { loader.style.display = 'none'; }
+}
+
+// ============================
+// GAS ESTIMATE
+// ============================
+async function estimateGas() {
+    if (!signer || !selectedContract) return;
+    const funcName = document.getElementById('functionSelect').value;
+    const poolId   = parseInt(document.getElementById('poolIdInput').value || '0');
+    const gasEl    = document.getElementById('gasEstimate');
+    gasEl.textContent = currentLang==='en' ? 'Calculating...' : 'جاري الحساب...';
+    try {
+        const abi      = [`function ${funcName}() public`, `function ${funcName}(uint256) public`];
+        const contract = new ethers.Contract(selectedContract, abi, signer);
+        let est;
+        try { est = await contract.estimateGas[funcName](poolId); }
+        catch { est = await contract.estimateGas[funcName](); }
+        const gp   = await provider.getGasPrice();
+        const cost = parseFloat(ethers.utils.formatEther(est.mul(gp))).toFixed(6);
+        gasEl.textContent = `≈ ${cost} ${selectedNetwork.symbol}`;
+    } catch {
+        gasEl.textContent = currentLang==='en' ? 'Auto-calculated on confirm' : 'سيتم حسابها تلقائيًا';
+    }
+}
+
+// ============================
+// EXECUTE
+// ============================
+async function executeWithdraw() {
+    if (!signer || !selectedContract) {
+        showStatus('executeStatus','error', currentLang==='en'?'Please connect your wallet and select a contract first.':'الرجاء ربط المحفظة وتحديد العقد أولًا.');
+        return;
+    }
+    const funcName = document.getElementById('functionSelect').value;
+    const poolId   = parseInt(document.getElementById('poolIdInput').value || '0');
+    const btn      = document.getElementById('executeBtn');
+
+    btn.disabled  = true;
+    btn.innerHTML = (currentLang==='en' ? '⏳ Processing...' : '⏳ جاري التنفيذ...');
+    showStatus('executeStatus','info', currentLang==='en'?'Please confirm the transaction in your wallet...':'الرجاء تأكيد المعاملة في محفظتك...');
+
+    try {
+        const abi      = [`function ${funcName}() public`, `function ${funcName}(uint256 _pid) public`];
+        const contract = new ethers.Contract(selectedContract, abi, signer);
+        let tx;
+        try { tx = await contract[funcName](poolId); } catch { tx = await contract[funcName](); }
+
+        showStatus('executeStatus','info', (currentLang==='en'?'📡 Transaction sent: ':'📡 المعاملة مرسلة: ')+tx.hash.slice(0,10)+'...');
+        await tx.wait();
+
+        showStatus('executeStatus','success',
+            (currentLang==='en'?'✅ Withdrawal successful!\n🔗 Tx Hash: ':'✅ تمت عملية السحب بنجاح!\n🔗 Hash: ')+tx.hash);
+
+        btn.innerHTML = '✅ '+(currentLang==='en'?'Done!':'تم!');
+        document.getElementById('donateSection').style.display = 'block';
+        document.getElementById('donateSection').scrollIntoView({ behavior:'smooth' });
+    } catch(err) {
+        const msg = err?.reason||err?.data?.message||err?.message||(currentLang==='en'?'Transaction failed':'فشلت المعاملة');
+        showStatus('executeStatus','error',
+            currentLang==='en'
+                ? `❌ Execution failed: ${msg}\n\nTry a different function or verify your withdrawal rights for this contract.`
+                : `❌ فشل التنفيذ: ${msg}\n\nجرب دالة مختلفة أو تأكد من صلاحيتك للسحب من هذا العقد.`);
+        btn.disabled  = false;
+        btn.innerHTML = '⚡ '+(currentLang==='en'?'Execute Withdrawal Now':'تنفيذ السحب الآن');
+    }
+}
+
+// ============================
+// DONATION
+// ============================
+async function sendDonation() {
+    const amount = document.getElementById('donateAmount').value;
+    const btn    = document.getElementById('donateBtn');
+
+    if (amount === '0') {
+        showStatus('donateStatus','success',
+            currentLang==='en'?'✅ No problem! The tool stays free for everyone. Good luck! 🎉':'✅ لا مشكلة! الأداة مجانية دائمًا. بالتوفيق! 🎉');
+        btn.disabled = true; return;
+    }
+    if (!signer) {
+        showStatus('donateStatus','error', currentLang==='en'?'Please connect your wallet first.':'الرجاء ربط المحفظة أولًا.');
+        return;
+    }
+    btn.disabled   = true;
+    btn.textContent = currentLang==='en'?'⏳ Sending...':'⏳ جاري الإرسال...';
+    try {
+        const tx = await signer.sendTransaction({ to: DONATION_WALLET, value: ethers.utils.parseEther(amount) });
+        await tx.wait();
+        showStatus('donateStatus','success',
+            currentLang==='en'
+                ? `🙏 Thank you! Your donation (${amount} ${selectedNetwork.symbol}) was received.`
+                : `🙏 شكرًا جزيلًا! تبرعك (${amount} ${selectedNetwork.symbol}) وصل بنجاح.`);
+        btn.textContent = '✅ '+(currentLang==='en'?'Thank you!':'شكرًا!');
+    } catch {
+        showStatus('donateStatus','error', currentLang==='en'?'Donation not sent. No worries!':'لم يتم إرسال التبرع. لا مشكلة!');
+        btn.disabled   = false;
+        btn.textContent = currentLang==='en'?'Send Optional Donation':'إرسال التبرع الاختياري';
+    }
+}
+
+// ============================
+// COPY WALLET
+// ============================
+function copyWallet(btn) {
+    navigator.clipboard.writeText(DONATION_WALLET).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✅ <span class="en">Copied!</span><span class="ar">تم النسخ!</span>';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color = 'var(--accent)';
+        setLang(currentLang);
+        setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = ''; btn.style.color = ''; setLang(currentLang); }, 2000);
+    });
+}
+
+// ============================
+// HELPER
+// ============================
+function showStatus(id, type, msg) {
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    el.className     = `status-msg ${type}`;
+    el.textContent   = msg;
+}
+</script>
 </body>
 </html>
